@@ -1,22 +1,63 @@
-const syllables = [
-  { consonant: "S", vowel: "O", consonantPhoneme: "s", vowelPhoneme: "o", label: "SO" },
-  { consonant: "M", vowel: "A", consonantPhoneme: "m", vowelPhoneme: "a", label: "MA" },
-  { consonant: "L", vowel: "E", consonantPhoneme: "l", vowelPhoneme: "e", label: "LE" },
-  { consonant: "N", vowel: "I", consonantPhoneme: "n", vowelPhoneme: "i", label: "NI" },
-  { consonant: "R", vowel: "O", consonantPhoneme: "r", vowelPhoneme: "o", label: "RO" }
+const worlds = [
+  {
+    id: "soleng",
+    title: "Solenga",
+    goal: 2,
+    accent: "#ffb347",
+    levels: [
+      { consonant: "S", vowel: "O", consonantPhoneme: "s", vowelPhoneme: "o", label: "SO" },
+      { consonant: "M", vowel: "A", consonantPhoneme: "m", vowelPhoneme: "a", label: "MA" }
+    ]
+  },
+  {
+    id: "lysskog",
+    title: "Lysskogen",
+    goal: 2,
+    accent: "#35c26b",
+    levels: [
+      { consonant: "L", vowel: "E", consonantPhoneme: "l", vowelPhoneme: "e", label: "LE" },
+      { consonant: "N", vowel: "I", consonantPhoneme: "n", vowelPhoneme: "i", label: "NI" }
+    ]
+  },
+  {
+    id: "stjernesjo",
+    title: "Stjernesjoen",
+    goal: 1,
+    accent: "#30bced",
+    levels: [
+      { consonant: "R", vowel: "O", consonantPhoneme: "r", vowelPhoneme: "o", label: "RO" }
+    ]
+  }
 ];
 
+const allLevels = worlds.flatMap((world, worldIndex) =>
+  world.levels.map((level, levelIndex) => ({
+    ...level,
+    id: level.label.toLowerCase(),
+    worldIndex,
+    levelIndex,
+    consonantAudio: `./sounds/phonemes/${level.consonantPhoneme}.mp3`,
+    vowelAudio: `./sounds/phonemes/${level.vowelPhoneme}.mp3`,
+    syllableAudio: `./sounds/syllables/${level.label.toLowerCase()}.mp3`
+  }))
+);
+
 const state = {
-  round: 0,
+  levelIndex: 0,
   stars: 0,
+  streak: 0,
+  rescued: 0,
   progress: 0,
   isDragging: false,
   hasMerged: false,
-  dragX: 0,
   pointerStartCoord: 0,
   progressStart: 0,
+  completed: new Set(),
+  unlockedWorlds: 1,
   audioReady: false,
-  audio: null
+  audio: null,
+  audioAssets: new Map(),
+  usingRealAudio: false
 };
 
 const draggableLetter = document.getElementById("draggableLetter");
@@ -38,12 +79,66 @@ const buddyStatus = document.getElementById("buddyStatus");
 const playExampleButton = document.getElementById("playExampleButton");
 const repeatButton = document.getElementById("repeatButton");
 const choicesList = document.getElementById("choicesList");
-const track = document.getElementById("track");
 const helperBanner = document.getElementById("helperBanner");
 const audioNote = document.getElementById("audioNote");
+const streakCount = document.getElementById("streakCount");
+const rescuedCount = document.getElementById("rescuedCount");
+const journeyMap = document.getElementById("journeyMap");
+const goalText = document.getElementById("goalText");
+const audioMode = document.getElementById("audioMode");
+
+function currentLevel() {
+  return allLevels[state.levelIndex];
+}
+
+function currentWorld() {
+  return worlds[currentLevel().worldIndex];
+}
 
 function phonemeLabel(symbol) {
   return `/${symbol}/`;
+}
+
+function loadAudioAsset(path) {
+  if (state.audioAssets.has(path)) {
+    return state.audioAssets.get(path);
+  }
+
+  const audio = new Audio(path);
+  audio.preload = "auto";
+  const record = { audio, loaded: false, failed: false, pending: null };
+  record.pending = new Promise((resolve) => {
+    audio.addEventListener("canplaythrough", () => {
+      record.loaded = true;
+      resolve(record);
+    }, { once: true });
+
+    audio.addEventListener("error", () => {
+      record.failed = true;
+      resolve(record);
+    }, { once: true });
+
+    audio.load();
+  });
+
+  state.audioAssets.set(path, record);
+  return record;
+}
+
+async function ensureLevelAudio(level) {
+  const records = [
+    loadAudioAsset(level.consonantAudio),
+    loadAudioAsset(level.vowelAudio),
+    loadAudioAsset(level.syllableAudio)
+  ];
+  await Promise.all(records.map((record) => record.pending));
+  const ready = records.every((record) => record.loaded && !record.failed);
+  state.usingRealAudio = ready;
+  audioMode.textContent = ready ? "Ekte lydfiler frå sounds/" : "Innebygd lydmotor";
+  if (ready) {
+    audioNote.textContent = "Ekte lydfiler er funne og brukte i denne runda.";
+  }
+  return ready;
 }
 
 function ensureAudio() {
@@ -56,6 +151,7 @@ function ensureAudio() {
     audioNote.textContent = "Denne nettlesaren støttar ikkje lydmotoren. Du kan framleis dra bokstavane.";
     return;
   }
+
   const audioContext = new AudioContextRef();
   const master = audioContext.createGain();
   master.gain.value = 0.2;
@@ -64,13 +160,28 @@ function ensureAudio() {
   state.audio = {
     context: audioContext,
     master,
-    sourceNodes: []
+    sourceNodes: [],
+    htmlLoops: []
   };
   state.audioReady = true;
   audioNote.textContent = "Lydmotoren er klar. Trykk og dra for å høyre bokstavlyden.";
 }
 
+function stopHtmlLoops() {
+  if (!state.audio?.htmlLoops) {
+    return;
+  }
+
+  state.audio.htmlLoops.forEach((audio) => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+  state.audio.htmlLoops = [];
+}
+
 function stopAudio() {
+  stopHtmlLoops();
+
   if (!state.audioReady) {
     return;
   }
@@ -181,21 +292,59 @@ function createVowelNode(context, phoneme) {
   return { source: oscillator, gain };
 }
 
-function playStretch(progress) {
+async function startRealAudioLoops(level) {
+  const ready = await ensureLevelAudio(level);
+  if (!ready) {
+    return false;
+  }
+
+  stopHtmlLoops();
+  const consonant = loadAudioAsset(level.consonantAudio).audio.cloneNode();
+  const vowel = loadAudioAsset(level.vowelAudio).audio.cloneNode();
+  consonant.loop = true;
+  vowel.loop = true;
+  consonant.volume = 0.3;
+  vowel.volume = 0;
+  await consonant.play().catch(() => {});
+  await vowel.play().catch(() => {});
+  state.audio.htmlLoops = [consonant, vowel];
+  return true;
+}
+
+function updateRealAudioVolumes(progress) {
+  const [consonant, vowel] = state.audio?.htmlLoops || [];
+  if (!consonant || !vowel) {
+    return;
+  }
+
+  consonant.volume = Math.max(0.06, 0.38 - progress * 0.25);
+  vowel.volume = Math.max(0, progress * 0.42);
+}
+
+async function playStretch(progress) {
+  const level = currentLevel();
+  if (state.usingRealAudio) {
+    if (!state.audio?.htmlLoops?.length) {
+      ensureAudio();
+      await startRealAudioLoops(level);
+    }
+    updateRealAudioVolumes(progress);
+    return;
+  }
+
   ensureAudio();
   if (!state.audioReady) {
     return;
   }
 
-  const syllable = syllables[state.round];
   const { context, master } = state.audio;
   if (context.state === "suspended") {
     context.resume();
   }
 
   if (!state.audio.consonantNode) {
-    const consonantNode = createConsonantNode(context, syllable.consonantPhoneme);
-    const vowelNode = createVowelNode(context, syllable.vowelPhoneme);
+    const consonantNode = createConsonantNode(context, level.consonantPhoneme);
+    const vowelNode = createVowelNode(context, level.vowelPhoneme);
     consonantNode.gain.connect(master);
     vowelNode.gain.connect(master);
     consonantNode.source.start();
@@ -214,7 +363,27 @@ function playStretch(progress) {
   state.audio.vowelNode.gain.gain.linearRampToValueAtTime(vowelLevel, now + 0.04);
 }
 
+function playSyllableClip(level) {
+  const record = loadAudioAsset(level.syllableAudio);
+  if (!record.loaded || record.failed) {
+    return false;
+  }
+
+  const audio = record.audio.cloneNode();
+  audio.volume = 0.75;
+  audio.play().catch(() => {});
+  state.audio.htmlLoops = [audio];
+  return true;
+}
+
 function releaseStretch(playSyllable = false) {
+  if (state.usingRealAudio) {
+    stopHtmlLoops();
+    if (playSyllable) {
+      playSyllableClip(currentLevel());
+    }
+  }
+
   if (!state.audioReady || !state.audio?.consonantNode || !state.audio?.vowelNode) {
     return;
   }
@@ -239,23 +408,100 @@ function releaseStretch(playSyllable = false) {
   }, playSyllable ? 520 : 160);
 }
 
+function unlockedLevelCount() {
+  const count = Math.min(allLevels.length, state.completed.size + 1);
+  return Math.max(1, count);
+}
+
+function updateJourneyMap() {
+  journeyMap.innerHTML = "";
+
+  worlds.forEach((world, worldIndex) => {
+    const worldDone = world.levels.every((level) => state.completed.has(level.label.toLowerCase()));
+    const unlocked = worldIndex < state.unlockedWorlds;
+
+    const card = document.createElement("div");
+    card.className = "journey-node";
+    if (unlocked) {
+      card.classList.add("unlocked");
+    }
+    if (worldDone) {
+      card.classList.add("done");
+    }
+    if (worldIndex === currentLevel().worldIndex) {
+      card.classList.add("current");
+    }
+    card.style.setProperty("--node-accent", world.accent);
+
+    const title = document.createElement("p");
+    title.className = "journey-node-title";
+    title.textContent = world.title;
+
+    const trail = document.createElement("div");
+    trail.className = "journey-mini-trail";
+    world.levels.forEach((level) => {
+      const bead = document.createElement("span");
+      bead.className = "journey-bead";
+      if (state.completed.has(level.label.toLowerCase())) {
+        bead.classList.add("done");
+      }
+      if (currentLevel().label === level.label) {
+        bead.classList.add("current");
+      }
+      trail.appendChild(bead);
+    });
+
+    const meta = document.createElement("p");
+    meta.className = "journey-node-meta";
+    meta.textContent = unlocked ? `Opna ${world.levels.length} lydsteg` : `Låst til ${world.goal} rette`;
+
+    card.append(title, trail, meta);
+    journeyMap.appendChild(card);
+  });
+}
+
+function nextLockedWorld() {
+  return worlds[state.unlockedWorlds] || null;
+}
+
+function updateGoalText() {
+  const nextWorld = nextLockedWorld();
+  const frontierWorldIndex = Math.min(state.unlockedWorlds - 1, worlds.length - 1);
+  const frontierWorld = worlds[frontierWorldIndex];
+  const completedInWorld = frontierWorld.levels.filter((level) =>
+    state.completed.has(level.label.toLowerCase())
+  ).length;
+
+  if (nextWorld) {
+    const remaining = Math.max(0, frontierWorld.goal - completedInWorld);
+    goalText.textContent = remaining > 0
+      ? `Bygg ${remaining} til i ${frontierWorld.title} for å opne ${nextWorld.title}.`
+      : `${nextWorld.title} er klar til å opnast.`;
+    return;
+  }
+
+  goalText.textContent = "Du er på siste lydsti. Samle fleire stjerner og øv på dei opna stavingane.";
+}
+
 function updateChoiceList() {
+  const limit = unlockedLevelCount();
   choicesList.innerHTML = "";
-  syllables.forEach((syllable, index) => {
+
+  allLevels.slice(0, limit).forEach((level, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "choice-pill";
-    button.textContent = syllable.label;
-    if (index === state.round) {
+    button.textContent = `${level.label} · ${worlds[level.worldIndex].title}`;
+    if (index === state.levelIndex) {
       button.classList.add("active");
     }
-    if (index < state.round) {
+    if (state.completed.has(level.id)) {
       button.classList.add("done");
     }
     button.addEventListener("click", () => {
-      state.round = index;
+      state.levelIndex = index;
       state.hasMerged = false;
-      loadRound();
+      loadLevel();
     });
     choicesList.appendChild(button);
   });
@@ -273,11 +519,31 @@ function spawnStarBurst() {
   }
 }
 
-function loadRound() {
-  const current = syllables[state.round];
+function refreshScoreboard() {
+  starCount.textContent = String(state.stars);
+  roundCount.textContent = String(state.levelIndex + 1);
+  streakCount.textContent = String(state.streak);
+  rescuedCount.textContent = String(state.rescued);
+  updateJourneyMap();
+  updateGoalText();
+  updateChoiceList();
+}
+
+function unlockWorldsIfNeeded() {
+  worlds.forEach((world, index) => {
+    const completedInWorld = world.levels.filter((level) => state.completed.has(level.label.toLowerCase())).length;
+    if (completedInWorld >= world.goal) {
+      state.unlockedWorlds = Math.max(state.unlockedWorlds, index + 2);
+    }
+  });
+  state.unlockedWorlds = Math.min(state.unlockedWorlds, worlds.length);
+}
+
+async function loadLevel() {
+  const level = currentLevel();
   releaseStretch(false);
+  await ensureLevelAudio(level);
   state.progress = 0;
-  state.dragX = 0;
   state.hasMerged = false;
   state.isDragging = false;
   state.progressStart = 0;
@@ -287,17 +553,16 @@ function loadRound() {
   vowelLetter.classList.remove("fusing");
   mergeZone.classList.remove("active");
   fusionFill.style.width = "0%";
-  consonantChar.textContent = current.consonant;
-  vowelChar.textContent = current.vowel;
-  consonantSound.textContent = phonemeLabel(current.consonantPhoneme);
-  vowelSound.textContent = phonemeLabel(current.vowelPhoneme);
-  mergeSyllable.textContent = current.label;
-  roundCount.textContent = String(state.round + 1);
-  successText.textContent =
-    `Dra ${current.consonant} roleg mot ${current.vowel} og høyr ${current.label}.`;
+  consonantChar.textContent = level.consonant;
+  vowelChar.textContent = level.vowel;
+  consonantSound.textContent = phonemeLabel(level.consonantPhoneme);
+  vowelSound.textContent = phonemeLabel(level.vowelPhoneme);
+  mergeSyllable.textContent = level.label;
+  successText.textContent = `Dra ${level.consonant} roleg mot ${level.vowel} og høyr ${level.label}.`;
   buddyStatus.textContent = "Lyso ventar på hjelp.";
-  helperBanner.textContent = `Trykk på ${current.consonant} og dra roleg mot ${current.vowel}.`;
-  updateChoiceList();
+  helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
+  successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
+  refreshScoreboard();
 }
 
 function clamp(number, min, max) {
@@ -317,12 +582,10 @@ function getMaxDrag() {
 function applyDragPosition(progress) {
   const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
   if (isMobileStack) {
-    const maxDrag = getMaxDrag();
-    const y = progress * maxDrag;
+    const y = progress * getMaxDrag();
     draggableLetter.style.transform = `translate(0px, calc(-50% + ${y}px))`;
   } else {
-    const maxDrag = getMaxDrag();
-    const x = progress * maxDrag;
+    const x = progress * getMaxDrag();
     draggableLetter.style.transform = `translate(${x}px, -50%)`;
   }
 
@@ -333,30 +596,43 @@ function applyDragPosition(progress) {
   vowelLetter.classList.toggle("fusing", progress > 0.7);
 }
 
+function findNextLevelIndex() {
+  const limit = unlockedLevelCount();
+  for (let index = 0; index < limit; index += 1) {
+    if (!state.completed.has(allLevels[index].id)) {
+      return index;
+    }
+  }
+  return (state.levelIndex + 1) % limit;
+}
+
 function completeMerge() {
   if (state.hasMerged) {
     return;
   }
 
+  const level = currentLevel();
   state.hasMerged = true;
   state.isDragging = false;
   state.stars += 3;
-  starCount.textContent = String(state.stars);
+  state.streak += 1;
+  state.rescued += 1;
+  state.completed.add(level.id);
+  unlockWorldsIfNeeded();
   successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
-  successText.textContent = `${syllables[state.round].label}! Du hjelpte Lyso og fekk 3 stjerner.`;
-  helperBanner.textContent = `Hurra! ${syllables[state.round].label} blei til ei stavelse.`;
+  successText.textContent = `${level.label}! Du hjelpte Lyso og fekk 3 stjerner.`;
+  helperBanner.textContent = `Hurra! ${level.label} blei til ei stavelse.`;
   buddy.classList.remove("saved");
   void buddy.offsetWidth;
   buddy.classList.add("saved");
-  buddyStatus.textContent = `Hurra! ${syllables[state.round].label} er redda.`;
+  buddyStatus.textContent = `Hurra! ${level.label} er redda.`;
   spawnStarBurst();
   releaseStretch(true);
+  refreshScoreboard();
 
-  const nextRound = (state.round + 1) % syllables.length;
   window.setTimeout(() => {
-    successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
-    state.round = nextRound;
-    loadRound();
+    state.levelIndex = findNextLevelIndex();
+    loadLevel();
   }, 1600);
 }
 
@@ -376,17 +652,14 @@ function handlePointerMove(event) {
 
   const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
   const maxDrag = getMaxDrag();
-
   if (isMobileStack) {
     const delta = event.clientY - state.pointerStartCoord;
-    const next = clamp(state.progressStart + delta / Math.max(maxDrag, 1), 0, 1);
-    setProgress(next);
+    setProgress(state.progressStart + delta / Math.max(maxDrag, 1));
     return;
   }
 
   const delta = event.clientX - state.pointerStartCoord;
-  const next = clamp(state.progressStart + delta / Math.max(maxDrag, 1), 0, 1);
-  setProgress(next);
+  setProgress(state.progressStart + delta / Math.max(maxDrag, 1));
 }
 
 function handlePointerUp() {
@@ -401,9 +674,11 @@ function handlePointerUp() {
   if (!state.hasMerged) {
     releaseStretch(false);
     state.progress = 0;
+    state.streak = 0;
     applyDragPosition(0);
     buddyStatus.textContent = "Prøv ein gong til. Dra roleg heilt fram.";
     helperBanner.textContent = "Fin øving. La oss prøve ein gong til heilt fram til vokalen.";
+    refreshScoreboard();
   }
 }
 
@@ -422,7 +697,7 @@ function onPointerDown(event) {
 
 function playExample() {
   ensureAudio();
-  loadRound();
+  loadLevel();
   helperBanner.textContent = "Eg viser eit lydeksempel no.";
   const steps = [0.08, 0.2, 0.35, 0.52, 0.68, 0.82, 0.96];
   let index = 0;
@@ -470,11 +745,11 @@ draggableLetter.addEventListener("keydown", handleKeyboard);
 playExampleButton.addEventListener("click", playExample);
 repeatButton.addEventListener("click", () => {
   releaseStretch(false);
-  loadRound();
+  loadLevel();
 });
 
 window.addEventListener("pointermove", handlePointerMove);
 window.addEventListener("pointerup", handlePointerUp);
 window.addEventListener("resize", () => applyDragPosition(state.progress));
 
-loadRound();
+loadLevel();

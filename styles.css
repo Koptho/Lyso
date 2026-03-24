@@ -37,6 +37,7 @@ body {
 }
 
 .hero-card,
+.journey-card,
 .play-card,
 .choices-card {
   background: var(--card);
@@ -214,6 +215,144 @@ h1 {
   background: linear-gradient(180deg, rgba(255, 248, 214, 0.98), rgba(255, 255, 255, 0.96));
   font-size: 1.05rem;
   line-height: 1.15;
+}
+
+.journey-card {
+  padding: 20px;
+}
+
+.journey-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.journey-eyebrow {
+  margin: 0;
+  color: var(--cool-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+}
+
+.journey-title {
+  margin: 6px 0 0;
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  line-height: 1.05;
+}
+
+.journey-badges {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.journey-pill {
+  min-width: 110px;
+  padding: 12px 14px;
+  border-radius: 22px;
+  background: #fff;
+  text-align: center;
+}
+
+.journey-pill-label {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.journey-pill-value {
+  display: block;
+  font-size: 1.5rem;
+  color: var(--warm-deep);
+}
+
+.journey-map {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.journey-node {
+  padding: 16px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72));
+  border: 3px solid rgba(22, 50, 79, 0.08);
+  opacity: 0.6;
+  transition: transform 180ms ease, border-color 180ms ease, opacity 180ms ease;
+}
+
+.journey-node.unlocked {
+  opacity: 1;
+}
+
+.journey-node.current {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--node-accent) 60%, white);
+}
+
+.journey-node.done {
+  background: linear-gradient(180deg, rgba(212, 255, 212, 0.92), rgba(255, 248, 212, 0.9));
+}
+
+.journey-node-title,
+.journey-node-meta {
+  margin: 0;
+}
+
+.journey-node-title {
+  font-size: 1.15rem;
+}
+
+.journey-node-meta {
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+
+.journey-mini-trail {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.journey-bead {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(22, 50, 79, 0.12);
+}
+
+.journey-bead.done {
+  background: linear-gradient(180deg, #ffd85f, #ff9f4a);
+}
+
+.journey-bead.current {
+  outline: 4px solid rgba(48, 188, 237, 0.25);
+}
+
+.goal-strip {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.goal-card {
+  padding: 14px 16px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fffefa, #ffffff);
+}
+
+.goal-label {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.goal-value {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.08rem;
 }
 
 .track {
@@ -405,6 +544,12 @@ h1 {
   margin-top: 12px;
 }
 
+.choices-note {
+  margin: 14px 0 0;
+  font-size: 0.98rem;
+  color: rgba(22, 50, 79, 0.8);
+}
+
 .choice-pill {
   border: 0;
   border-radius: 999px;
@@ -477,6 +622,16 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .journey-head,
+  .goal-strip {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .journey-map {
+    grid-template-columns: 1fr;
+  }
+
   .track {
     height: 280px;
   }
@@ -499,6 +654,7 @@ h1 {
   }
 
   .play-card,
+  .journey-card,
   .hero-card,
   .choices-card {
     padding: 16px;
@@ -564,5 +720,11 @@ h1 {
 
   .scoreboard {
     grid-template-columns: 1fr;
+  }
+
+  .journey-badges,
+  .goal-strip {
+    grid-template-columns: 1fr;
+    display: grid;
   }
 }

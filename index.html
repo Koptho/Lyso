@@ -47,6 +47,38 @@
         </div>
       </section>
 
+      <section class="journey-card">
+        <div class="journey-head">
+          <div>
+            <p class="journey-eyebrow">Lyso-reisa</p>
+            <h2 class="journey-title">Samle lysstjerner og opne nye lydstiar</h2>
+          </div>
+          <div class="journey-badges">
+            <div class="journey-pill">
+              <span class="journey-pill-label">Streak</span>
+              <span class="journey-pill-value" id="streakCount">0</span>
+            </div>
+            <div class="journey-pill">
+              <span class="journey-pill-label">Redda</span>
+              <span class="journey-pill-value" id="rescuedCount">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="journey-map" id="journeyMap" aria-label="Progresjonskart"></div>
+
+        <div class="goal-strip">
+          <div class="goal-card">
+            <span class="goal-label">Mål no</span>
+            <strong class="goal-value" id="goalText">Bygg 2 stavingar for å opne neste sti.</strong>
+          </div>
+          <div class="goal-card">
+            <span class="goal-label">Lydmodus</span>
+            <strong class="goal-value" id="audioMode">Innebygd lydmotor</strong>
+          </div>
+        </div>
+      </section>
+
       <section class="play-card">
         <div class="instruction-row">
           <button class="sound-button" id="playExampleButton" type="button">
@@ -111,8 +143,11 @@
       </section>
 
       <section class="choices-card" aria-label="Komande stavingar">
-        <p class="choices-title">Meistringsnivå</p>
+        <p class="choices-title">Opplåste stavingar</p>
         <div class="choices-list" id="choicesList"></div>
+        <p class="choices-note">
+          Tips: Legg ekte fonemfiler i mappa <code>sounds/</code> for å byte ut den innebygde lydmotoren.
+        </p>
       </section>
     </main>
 
