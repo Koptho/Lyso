@@ -56,6 +56,10 @@ const state = {
   framePending: false,
   maxDrag: 0,
   mobileLayout: false,
+  audioStarted: false,
+  audioStartPending: false,
+  lastAudioProgress: -1,
+  lastAudioTick: 0,
   completed: new Set(),
   unlockedWorlds: 1,
   audioReady: false,
@@ -196,6 +200,10 @@ function stopHtmlLoops() {
 
 function stopAudio() {
   stopHtmlLoops();
+  state.audioStarted = false;
+  state.audioStartPending = false;
+  state.lastAudioProgress = -1;
+  state.lastAudioTick = 0;
 
   if (!state.audioReady) {
     return;
@@ -274,6 +282,48 @@ function createConsonantNode(context, phoneme) {
   return { source: oscillator, gain };
 }
 
+async function ensureDragAudioStarted(level) {
+  if (state.audioStarted || state.audioStartPending) {
+    return;
+  }
+
+  state.audioStartPending = true;
+
+  if (state.usingRealAudio) {
+    ensureAudio();
+    const started = await startRealAudioLoops(level);
+    state.audioStarted = started;
+    state.audioStartPending = false;
+    return;
+  }
+
+  ensureAudio();
+  if (!state.audioReady) {
+    state.audioStartPending = false;
+    return;
+  }
+
+  const { context, master } = state.audio;
+  if (context.state === "suspended") {
+    context.resume();
+  }
+
+  if (!state.audio.consonantNode) {
+    const consonantNode = createConsonantNode(context, level.consonantPhoneme);
+    const vowelNode = createVowelNode(context, level.vowelPhoneme);
+    consonantNode.gain.connect(master);
+    vowelNode.gain.connect(master);
+    consonantNode.source.start();
+    vowelNode.source.start();
+    state.audio.sourceNodes.push(consonantNode.source, vowelNode.source);
+    state.audio.consonantNode = consonantNode;
+    state.audio.vowelNode = vowelNode;
+  }
+
+  state.audioStarted = true;
+  state.audioStartPending = false;
+}
+
 function createVowelNode(context, phoneme) {
   const oscillator = context.createOscillator();
   const formantOne = context.createBiquadFilter();
@@ -338,44 +388,41 @@ function updateRealAudioVolumes(progress) {
 
 async function playStretch(progress) {
   const level = currentLevel();
+  const nowMs = performance.now();
+  const progressDelta = Math.abs(progress - state.lastAudioProgress);
+  const timeDelta = nowMs - state.lastAudioTick;
+
+  if (!state.audioStarted) {
+    ensureDragAudioStarted(level);
+  }
+
+  if (progressDelta < 0.025 && timeDelta < 32) {
+    return;
+  }
+
+  state.lastAudioProgress = progress;
+  state.lastAudioTick = nowMs;
+
   if (state.usingRealAudio) {
     if (!state.audio?.htmlLoops?.length) {
-      ensureAudio();
-      await startRealAudioLoops(level);
+      return;
     }
     updateRealAudioVolumes(progress);
     return;
   }
 
-  ensureAudio();
-  if (!state.audioReady) {
+  if (!state.audioReady || !state.audio?.consonantNode || !state.audio?.vowelNode) {
     return;
   }
 
-  const { context, master } = state.audio;
-  if (context.state === "suspended") {
-    context.resume();
-  }
-
-  if (!state.audio.consonantNode) {
-    const consonantNode = createConsonantNode(context, level.consonantPhoneme);
-    const vowelNode = createVowelNode(context, level.vowelPhoneme);
-    consonantNode.gain.connect(master);
-    vowelNode.gain.connect(master);
-    consonantNode.source.start();
-    vowelNode.source.start();
-    state.audio.sourceNodes.push(consonantNode.source, vowelNode.source);
-    state.audio.consonantNode = consonantNode;
-    state.audio.vowelNode = vowelNode;
-  }
-
+  const { context } = state.audio;
   const now = context.currentTime;
   const consonantLevel = Math.max(0.06, 0.34 - progress * 0.22);
   const vowelLevel = Math.max(0.001, progress * 0.36);
   state.audio.consonantNode.gain.gain.cancelScheduledValues(now);
   state.audio.vowelNode.gain.gain.cancelScheduledValues(now);
-  state.audio.consonantNode.gain.gain.linearRampToValueAtTime(consonantLevel, now + 0.04);
-  state.audio.vowelNode.gain.gain.linearRampToValueAtTime(vowelLevel, now + 0.04);
+  state.audio.consonantNode.gain.gain.setTargetAtTime(consonantLevel, now, 0.03);
+  state.audio.vowelNode.gain.gain.setTargetAtTime(vowelLevel, now, 0.03);
 }
 
 function playSyllableClip(level) {
@@ -562,6 +609,10 @@ async function loadLevel() {
   state.hasMerged = false;
   state.isDragging = false;
   state.progressStart = 0;
+  state.audioStarted = false;
+  state.audioStartPending = false;
+  state.lastAudioProgress = -1;
+  state.lastAudioTick = 0;
   draggableLetter.style.transform = "translate(0px, -50%)";
   draggableLetter.setAttribute("aria-valuenow", "0");
   draggableLetter.classList.remove("fusing", "dragging");
@@ -704,6 +755,7 @@ function handlePointerUp() {
 
 function onPointerDown(event) {
   ensureAudio();
+  ensureDragAudioStarted(currentLevel());
   state.isDragging = true;
   state.hasMerged = false;
   state.progressStart = state.progress;
