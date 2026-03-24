@@ -21,6 +21,8 @@ og så opne adressa som blir vist i terminalen.
 - kontinuerleg fonem-liknande lydstøtte via Web Audio
 - belønning med stjerner og ein figur som blir "redda"
 - progresjon gjennom enkle stavingar: `SO`, `MA`, `LE`, `NI`, `RO`
+- betre mobiloppleving med større knappar og tydelegare vertikal draging
+- eige favicon og meir synleg statushjelp undervegs
 
 ## Neste pedagogiske steg
 

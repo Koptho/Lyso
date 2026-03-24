@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Stavelserommet</title>
+    <meta
+      name="description"
+      content="Ei barnevenleg øvingsapp for lydsammentrekning og stavingar."
+    />
+    <meta name="theme-color" content="#ffd85f" />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -52,6 +58,9 @@
         </div>
 
         <div class="track-wrap">
+          <p class="helper-banner" id="helperBanner" aria-live="polite">
+            Trykk på den varme bokstaven og dra henne roleg mot vokalen.
+          </p>
           <div class="track" id="track" aria-label="Dra bokstaven mot vokalen">
             <div class="glow-line" id="glowLine"></div>
 
@@ -97,6 +106,7 @@
           <p class="success-text" id="successText">
             Dra bokstaven sakte mot vokalen og høyr korleis lyden blir til ei stavelse.
           </p>
+          <p class="audio-note" id="audioNote">Lyd startar når du trykkjer eller dreg.</p>
         </div>
       </section>
 

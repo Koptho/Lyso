@@ -39,6 +39,8 @@ const playExampleButton = document.getElementById("playExampleButton");
 const repeatButton = document.getElementById("repeatButton");
 const choicesList = document.getElementById("choicesList");
 const track = document.getElementById("track");
+const helperBanner = document.getElementById("helperBanner");
+const audioNote = document.getElementById("audioNote");
 
 function phonemeLabel(symbol) {
   return `/${symbol}/`;
@@ -51,6 +53,7 @@ function ensureAudio() {
 
   const AudioContextRef = window.AudioContext || window.webkitAudioContext;
   if (!AudioContextRef) {
+    audioNote.textContent = "Denne nettlesaren støttar ikkje lydmotoren. Du kan framleis dra bokstavane.";
     return;
   }
   const audioContext = new AudioContextRef();
@@ -64,6 +67,7 @@ function ensureAudio() {
     sourceNodes: []
   };
   state.audioReady = true;
+  audioNote.textContent = "Lydmotoren er klar. Trykk og dra for å høyre bokstavlyden.";
 }
 
 function stopAudio() {
@@ -292,6 +296,7 @@ function loadRound() {
   successText.textContent =
     `Dra ${current.consonant} roleg mot ${current.vowel} og høyr ${current.label}.`;
   buddyStatus.textContent = "Lyso ventar på hjelp.";
+  helperBanner.textContent = `Trykk på ${current.consonant} og dra roleg mot ${current.vowel}.`;
   updateChoiceList();
 }
 
@@ -339,6 +344,7 @@ function completeMerge() {
   starCount.textContent = String(state.stars);
   successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
   successText.textContent = `${syllables[state.round].label}! Du hjelpte Lyso og fekk 3 stjerner.`;
+  helperBanner.textContent = `Hurra! ${syllables[state.round].label} blei til ei stavelse.`;
   buddy.classList.remove("saved");
   void buddy.offsetWidth;
   buddy.classList.add("saved");
@@ -397,6 +403,7 @@ function handlePointerUp() {
     state.progress = 0;
     applyDragPosition(0);
     buddyStatus.textContent = "Prøv ein gong til. Dra roleg heilt fram.";
+    helperBanner.textContent = "Fin øving. La oss prøve ein gong til heilt fram til vokalen.";
   }
 }
 
@@ -406,6 +413,7 @@ function onPointerDown(event) {
   state.hasMerged = false;
   state.progressStart = state.progress;
   successText.textContent = "Høyr lyden strekkje seg heilt til bokstavane møtest.";
+  helperBanner.textContent = "Ja, slik. Hald fram roleg mot vokalen.";
   draggableLetter.classList.add("dragging");
   const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
   state.pointerStartCoord = isMobileStack ? event.clientY : event.clientX;
@@ -415,6 +423,7 @@ function onPointerDown(event) {
 function playExample() {
   ensureAudio();
   loadRound();
+  helperBanner.textContent = "Eg viser eit lydeksempel no.";
   const steps = [0.08, 0.2, 0.35, 0.52, 0.68, 0.82, 0.96];
   let index = 0;
 
@@ -440,6 +449,7 @@ function handleKeyboard(event) {
   ensureAudio();
 
   if (event.key === "Enter" || event.key === " ") {
+    helperBanner.textContent = "Eg viser eit lydeksempel no.";
     playExample();
     return;
   }

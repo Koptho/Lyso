@@ -21,6 +21,7 @@ body {
   min-height: 100vh;
   font-family: "Avenir Next Rounded", "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--text);
+  -webkit-tap-highlight-color: transparent;
   background:
     radial-gradient(circle at top left, rgba(255, 200, 61, 0.45), transparent 24%),
     radial-gradient(circle at bottom right, rgba(48, 188, 237, 0.4), transparent 28%),
@@ -184,6 +185,13 @@ h1 {
   cursor: pointer;
 }
 
+.sound-button:focus-visible,
+.choice-pill:focus-visible,
+.letter-tile:focus-visible {
+  outline: 5px solid rgba(48, 188, 237, 0.35);
+  outline-offset: 4px;
+}
+
 .sound-button.ghost {
   background: linear-gradient(180deg, #ffbd59, #ff8c42);
   box-shadow: 0 8px 18px rgba(255, 140, 66, 0.28);
@@ -197,6 +205,15 @@ h1 {
     linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.9)),
     linear-gradient(90deg, rgba(48, 188, 237, 0.18), rgba(255, 200, 61, 0.22));
   padding: 24px 14px;
+}
+
+.helper-banner {
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 248, 214, 0.98), rgba(255, 255, 255, 0.96));
+  font-size: 1.05rem;
+  line-height: 1.15;
 }
 
 .track {
@@ -227,6 +244,7 @@ h1 {
   text-align: center;
   user-select: none;
   touch-action: none;
+  -webkit-user-drag: none;
   transition:
     transform 180ms ease,
     border-radius 200ms ease,
@@ -370,6 +388,12 @@ h1 {
   max-width: 46ch;
 }
 
+.audio-note {
+  margin: 10px 0 0;
+  font-size: 0.98rem;
+  color: rgba(22, 50, 79, 0.72);
+}
+
 .choices-card {
   padding: 18px;
 }
@@ -482,16 +506,16 @@ h1 {
   }
 
   .track-wrap {
-    padding: 18px 10px;
+    padding: 16px 10px 18px;
   }
 
   .track {
-    height: 320px;
+    height: 340px;
   }
 
   .letter-tile {
-    width: 108px;
-    height: 108px;
+    width: 112px;
+    height: 112px;
   }
 
   .letter-char {
@@ -499,11 +523,11 @@ h1 {
   }
 
   .consonant-tile {
-    top: 34%;
+    top: 31%;
   }
 
   .vowel-tile {
-    top: 72%;
+    top: 75%;
   }
 
   .merge-zone {
@@ -521,5 +545,24 @@ h1 {
     top: auto;
     bottom: 74px;
     transform: none;
+  }
+
+  .helper-banner {
+    font-size: 1rem;
+    text-align: center;
+  }
+
+  .instruction-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .sound-button {
+    width: 100%;
+    min-height: 56px;
+  }
+
+  .scoreboard {
+    grid-template-columns: 1fr;
   }
 }
