@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="nn">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stavelserommet</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Lydsammentrekning</p>
+          <h1>Hjelp Lyso å byggje stavingar</h1>
+          <p class="intro">
+            Dra den første bokstaven bort til vokalen. Høyr lyden strekkje seg heilt
+            fram til dei smeltar saman til ei ny staving.
+          </p>
+        </div>
+
+        <div class="reward-panel" aria-live="polite">
+          <div class="buddy-wrap">
+            <div class="buddy" id="buddy" aria-hidden="true">
+              <div class="buddy-eye buddy-eye-left"></div>
+              <div class="buddy-eye buddy-eye-right"></div>
+              <div class="buddy-mouth"></div>
+            </div>
+            <p class="buddy-status" id="buddyStatus">Lyso ventar på hjelp.</p>
+          </div>
+
+          <div class="scoreboard">
+            <div class="score-pill">
+              <span class="score-label">Stjerner</span>
+              <span class="score-value" id="starCount">0</span>
+            </div>
+            <div class="score-pill">
+              <span class="score-label">Runde</span>
+              <span class="score-value" id="roundCount">1</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="play-card">
+        <div class="instruction-row">
+          <button class="sound-button" id="playExampleButton" type="button">
+            Spel lydeksempel
+          </button>
+          <button class="sound-button ghost" id="repeatButton" type="button">
+            Prøv same stavelse igjen
+          </button>
+        </div>
+
+        <div class="track-wrap">
+          <div class="track" id="track" aria-label="Dra bokstaven mot vokalen">
+            <div class="glow-line" id="glowLine"></div>
+
+            <div
+              class="letter-tile consonant-tile"
+              id="draggableLetter"
+              role="slider"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+              aria-label="Dra første bokstav mot vokalen"
+              tabindex="0"
+            >
+              <span class="letter-char" id="consonantChar">S</span>
+              <span class="letter-sound" id="consonantSound">/s/</span>
+            </div>
+
+            <div class="merge-zone" id="mergeZone" aria-hidden="true">
+              <div class="merge-ring"></div>
+              <div class="merge-syllable" id="mergeSyllable">SO</div>
+            </div>
+
+            <div class="letter-tile vowel-tile" id="vowelLetter">
+              <span class="letter-char" id="vowelChar">O</span>
+              <span class="letter-sound" id="vowelSound">/o/</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="fusion-meter">
+          <div class="fusion-labels">
+            <span>Lang lyd</span>
+            <span>Smelt saman</span>
+          </div>
+          <div class="fusion-bar">
+            <div class="fusion-fill" id="fusionFill"></div>
+          </div>
+        </div>
+
+        <div class="success-card" id="successCard" aria-live="polite">
+          <div class="success-stars" id="successStars" aria-hidden="true"></div>
+          <p class="success-title">Prøv å byggje stavinga</p>
+          <p class="success-text" id="successText">
+            Dra bokstaven sakte mot vokalen og høyr korleis lyden blir til ei stavelse.
+          </p>
+        </div>
+      </section>
+
+      <section class="choices-card" aria-label="Komande stavingar">
+        <p class="choices-title">Meistringsnivå</p>
+        <div class="choices-list" id="choicesList"></div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
