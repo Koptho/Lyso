@@ -52,6 +52,10 @@ const state = {
   hasMerged: false,
   pointerStartCoord: 0,
   progressStart: 0,
+  pendingProgress: 0,
+  framePending: false,
+  maxDrag: 0,
+  mobileLayout: false,
   completed: new Set(),
   unlockedWorlds: 1,
   audioReady: false,
@@ -93,6 +97,17 @@ function currentLevel() {
 
 function currentWorld() {
   return worlds[currentLevel().worldIndex];
+}
+
+function refreshLayoutMetrics() {
+  state.mobileLayout = window.matchMedia("(max-width: 620px)").matches;
+  if (state.mobileLayout) {
+    const vowelTop = vowelLetter.offsetTop;
+    const consonantTop = draggableLetter.offsetTop;
+    state.maxDrag = Math.max(0, vowelTop - consonantTop - 10);
+    return;
+  }
+  state.maxDrag = Math.max(0, vowelLetter.offsetLeft - draggableLetter.offsetLeft - 150);
 }
 
 function phonemeLabel(symbol) {
@@ -562,6 +577,7 @@ async function loadLevel() {
   buddyStatus.textContent = "Lyso ventar på hjelp.";
   helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
   successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
+  refreshLayoutMetrics();
   refreshScoreboard();
 }
 
@@ -569,23 +585,12 @@ function clamp(number, min, max) {
   return Math.min(max, Math.max(min, number));
 }
 
-function getMaxDrag() {
-  const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
-  if (isMobileStack) {
-    const vowelTop = vowelLetter.offsetTop;
-    const consonantTop = draggableLetter.offsetTop;
-    return Math.max(0, vowelTop - consonantTop - 10);
-  }
-  return Math.max(0, vowelLetter.offsetLeft - draggableLetter.offsetLeft - 150);
-}
-
 function applyDragPosition(progress) {
-  const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
-  if (isMobileStack) {
-    const y = progress * getMaxDrag();
+  if (state.mobileLayout) {
+    const y = progress * state.maxDrag;
     draggableLetter.style.transform = `translate(0px, calc(-50% + ${y}px))`;
   } else {
-    const x = progress * getMaxDrag();
+    const x = progress * state.maxDrag;
     draggableLetter.style.transform = `translate(${x}px, -50%)`;
   }
 
@@ -645,21 +650,35 @@ function setProgress(progress) {
   }
 }
 
+function scheduleProgress(progress) {
+  state.pendingProgress = clamp(progress, 0, 1);
+  if (state.framePending) {
+    return;
+  }
+
+  state.framePending = true;
+  window.requestAnimationFrame(() => {
+    state.framePending = false;
+    if (!state.isDragging && !state.hasMerged) {
+      return;
+    }
+    setProgress(state.pendingProgress);
+  });
+}
+
 function handlePointerMove(event) {
   if (!state.isDragging || state.hasMerged) {
     return;
   }
 
-  const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
-  const maxDrag = getMaxDrag();
-  if (isMobileStack) {
+  if (state.mobileLayout) {
     const delta = event.clientY - state.pointerStartCoord;
-    setProgress(state.progressStart + delta / Math.max(maxDrag, 1));
+    scheduleProgress(state.progressStart + delta / Math.max(state.maxDrag, 1));
     return;
   }
 
   const delta = event.clientX - state.pointerStartCoord;
-  setProgress(state.progressStart + delta / Math.max(maxDrag, 1));
+  scheduleProgress(state.progressStart + delta / Math.max(state.maxDrag, 1));
 }
 
 function handlePointerUp() {
@@ -674,6 +693,7 @@ function handlePointerUp() {
   if (!state.hasMerged) {
     releaseStretch(false);
     state.progress = 0;
+    state.pendingProgress = 0;
     state.streak = 0;
     applyDragPosition(0);
     buddyStatus.textContent = "Prøv ein gong til. Dra roleg heilt fram.";
@@ -690,8 +710,8 @@ function onPointerDown(event) {
   successText.textContent = "Høyr lyden strekkje seg heilt til bokstavane møtest.";
   helperBanner.textContent = "Ja, slik. Hald fram roleg mot vokalen.";
   draggableLetter.classList.add("dragging");
-  const isMobileStack = window.matchMedia("(max-width: 620px)").matches;
-  state.pointerStartCoord = isMobileStack ? event.clientY : event.clientX;
+  refreshLayoutMetrics();
+  state.pointerStartCoord = state.mobileLayout ? event.clientY : event.clientX;
   draggableLetter.setPointerCapture(event.pointerId);
 }
 
@@ -737,7 +757,6 @@ function handleKeyboard(event) {
 }
 
 draggableLetter.addEventListener("pointerdown", onPointerDown);
-draggableLetter.addEventListener("pointermove", handlePointerMove);
 draggableLetter.addEventListener("pointerup", handlePointerUp);
 draggableLetter.addEventListener("pointercancel", handlePointerUp);
 draggableLetter.addEventListener("keydown", handleKeyboard);
@@ -750,6 +769,9 @@ repeatButton.addEventListener("click", () => {
 
 window.addEventListener("pointermove", handlePointerMove);
 window.addEventListener("pointerup", handlePointerUp);
-window.addEventListener("resize", () => applyDragPosition(state.progress));
+window.addEventListener("resize", () => {
+  refreshLayoutMetrics();
+  applyDragPosition(state.progress);
+});
 
 loadLevel();
