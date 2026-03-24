@@ -1,6 +1,6 @@
 # Stavelserommet
 
-Ein liten lokal nettapp for å øve på lydsammentrekning med to bokstavar.
+Ein liten lokal nettapp for å øve på å trekkje saman to bokstavar til ei stavelse.
 
 ## Opne appen
 
@@ -18,20 +18,17 @@ og så opne adressa som blir vist i terminalen.
 
 - dra-og-slepp av første bokstav mot vokalen
 - visuell samansmelting med farge, form og animasjon
-- kontinuerleg fonem-liknande lydstøtte via Web Audio
+- lydlaus utgåve for rolegare og mindre krevjande øving
 - belønning med stjerner og ein figur som blir "redda"
-- progresjon gjennom enkle stavingar: `SO`, `MA`, `LE`, `NI`, `RO`
-- ein meir Poio-liknande reisemodus med opplåste lydstiar, streak og delmål
+- Poio-liknande reisemodus med streak, delmål og små vekegrupper
+- vaksenmodus der du kan leggje inn vekas eigne stavingar direkte i appen
 - betre mobiloppleving med større knappar og tydelegare vertikal draging
 - eige favicon og meir synleg statushjelp undervegs
 
-## Ekte lydfiler
+## Vekas stavingar
 
-Appen støttar eigne fonem- og stavingfiler i `sounds/`.
+Opne "Vaksenmodus" i appen og skriv éi stavelse per linje.
 
-- sjå [sounds/README.md](/Users/thomaskopperstad/Documents/Stavelser/sounds/README.md) for mappestruktur
-- når rette filer finst, bruker appen dei automatisk i staden for den innebygde lydmotoren
-
-## Neste pedagogiske steg
-
-For endå meir naturleg uttale kan ein byte ut den innebygde Web Audio-lyden med innspelte fonemfiler frå logoped/pedagog, men appen fungerer allereie utan eksterne filer.
+- døme: `MA`, `SO`, `LI`, `NO`
+- innhaldet blir lagra lokalt i nettlesaren på denne eininga
+- trykk "Tilbakestill standard" for å gå tilbake til startpakka

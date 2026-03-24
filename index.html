@@ -6,7 +6,7 @@
     <title>Stavelserommet</title>
     <meta
       name="description"
-      content="Ei barnevenleg øvingsapp for lydsammentrekning og stavingar."
+      content="Ei barnevenleg øvingsapp for å trekkje saman bokstavar til stavingar."
     />
     <meta name="theme-color" content="#ffd85f" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
@@ -16,11 +16,11 @@
     <main class="app-shell">
       <section class="hero-card">
         <div class="hero-copy">
-          <p class="eyebrow">Lydsammentrekning</p>
+          <p class="eyebrow">Stavingsøving</p>
           <h1>Hjelp Lyso å byggje stavingar</h1>
           <p class="intro">
-            Dra den første bokstaven bort til vokalen. Høyr lyden strekkje seg heilt
-            fram til dei smeltar saman til ei ny staving.
+            Dra den første bokstaven bort til vokalen. Sjå korleis bokstavane kjem
+            saman og blir til ei ny stavelse.
           </p>
         </div>
 
@@ -51,7 +51,7 @@
         <div class="journey-head">
           <div>
             <p class="journey-eyebrow">Lyso-reisa</p>
-            <h2 class="journey-title">Samle lysstjerner og opne nye lydstiar</h2>
+            <h2 class="journey-title">Samle lysstjerner og øv på vekas stavingar</h2>
           </div>
           <div class="journey-badges">
             <div class="journey-pill">
@@ -73,8 +73,8 @@
             <strong class="goal-value" id="goalText">Bygg 2 stavingar for å opne neste sti.</strong>
           </div>
           <div class="goal-card">
-            <span class="goal-label">Lydmodus</span>
-            <strong class="goal-value" id="audioMode">Innebygd lydmotor</strong>
+            <span class="goal-label">Vekepakke</span>
+            <strong class="goal-value" id="weekPackLabel">Standard stavingar</strong>
           </div>
         </div>
       </section>
@@ -82,7 +82,7 @@
       <section class="play-card">
         <div class="instruction-row">
           <button class="sound-button" id="playExampleButton" type="button">
-            Spel lydeksempel
+            Vis eksempel
           </button>
           <button class="sound-button ghost" id="repeatButton" type="button">
             Prøv same stavelse igjen
@@ -107,7 +107,7 @@
               tabindex="0"
             >
               <span class="letter-char" id="consonantChar">S</span>
-              <span class="letter-sound" id="consonantSound">/s/</span>
+              <span class="letter-sound" id="consonantSound">første lyd</span>
             </div>
 
             <div class="merge-zone" id="mergeZone" aria-hidden="true">
@@ -117,14 +117,14 @@
 
             <div class="letter-tile vowel-tile" id="vowelLetter">
               <span class="letter-char" id="vowelChar">O</span>
-              <span class="letter-sound" id="vowelSound">/o/</span>
+              <span class="letter-sound" id="vowelSound">andre lyd</span>
             </div>
           </div>
         </div>
 
         <div class="fusion-meter">
           <div class="fusion-labels">
-            <span>Lang lyd</span>
+            <span>Dra saman</span>
             <span>Smelt saman</span>
           </div>
           <div class="fusion-bar">
@@ -136,9 +136,9 @@
           <div class="success-stars" id="successStars" aria-hidden="true"></div>
           <p class="success-title">Prøv å byggje stavinga</p>
           <p class="success-text" id="successText">
-            Dra bokstaven sakte mot vokalen og høyr korleis lyden blir til ei stavelse.
+            Dra bokstaven sakte mot vokalen og sjå korleis ho blir til ei stavelse.
           </p>
-          <p class="audio-note" id="audioNote">Lyd startar når du trykkjer eller dreg.</p>
+          <p class="audio-note" id="audioNote">Denne versjonen er laga utan lydstøtte.</p>
         </div>
       </section>
 
@@ -146,8 +146,31 @@
         <p class="choices-title">Opplåste stavingar</p>
         <div class="choices-list" id="choicesList"></div>
         <p class="choices-note">
-          Tips: Legg ekte fonemfiler i mappa <code>sounds/</code> for å byte ut den innebygde lydmotoren.
+          Du kan byte ut vekas stavingar i panelet under.
         </p>
+        <details class="config-panel">
+          <summary>Vaksenmodus: legg inn vekas stavingar</summary>
+          <label class="config-label" for="syllableInput">
+            Skriv éi stavelse per linje. To bokstavar fungerer best, til dømes `ma`, `so`, `li`.
+          </label>
+          <textarea
+            id="syllableInput"
+            class="config-input"
+            rows="8"
+            spellcheck="false"
+          >SO
+MA
+LE
+NI
+RO</textarea>
+          <div class="config-actions">
+            <button class="sound-button" id="saveConfigButton" type="button">Lagre vekas stavingar</button>
+            <button class="sound-button ghost" id="resetConfigButton" type="button">Tilbakestill standard</button>
+          </div>
+          <p class="config-status" id="configStatus" aria-live="polite">
+            Standardpakka er aktiv.
+          </p>
+        </details>
       </section>
     </main>
 
