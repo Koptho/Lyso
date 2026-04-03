@@ -24,8 +24,6 @@ const draggableLetter = document.getElementById("draggableLetter");
 const vowelLetter = document.getElementById("vowelLetter");
 const consonantChar = document.getElementById("consonantChar");
 const vowelChar = document.getElementById("vowelChar");
-const consonantSound = document.getElementById("consonantSound");
-const vowelSound = document.getElementById("vowelSound");
 const receiverStars = document.getElementById("receiverStars");
 const successText = document.getElementById("successText");
 const successCard = document.getElementById("successCard");
@@ -263,8 +261,6 @@ function loadLevel() {
   refreshLayoutMetrics();
   consonantChar.textContent = level.consonant;
   vowelChar.textContent = level.vowel;
-  consonantSound.textContent = "første lyd";
-  vowelSound.textContent = "andre lyd";
   successText.textContent = `Dra ${level.consonant} roleg mot ${level.vowel} og bygg ${level.label}.`;
   helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
   buddyStatus.textContent = "Lyso ventar på hjelp.";
@@ -320,8 +316,7 @@ function completeMerge() {
   state.rescued += 1;
   state.completed.add(level.id);
 
-  vowelChar.textContent = level.label;
-  vowelSound.textContent = "stavelse";
+  vowelChar.textContent = level.vowel;
   successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
   successText.textContent = `${level.label}! Flott jobba. Du fekk 3 stjerner.`;
   helperBanner.textContent = `Hurra! ${level.label} blei ferdig.`;
