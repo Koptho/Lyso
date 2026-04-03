@@ -26,12 +26,12 @@ const vowelChar = document.getElementById("vowelChar");
 const consonantSound = document.getElementById("consonantSound");
 const vowelSound = document.getElementById("vowelSound");
 const mergeZone = document.getElementById("mergeZone");
+const mergeStars = document.getElementById("mergeStars");
 const mergeVowel = document.getElementById("mergeVowel");
 const mergeSyllable = document.getElementById("mergeSyllable");
 const fusionFill = document.getElementById("fusionFill");
 const successText = document.getElementById("successText");
 const successCard = document.getElementById("successCard");
-const successStars = document.getElementById("successStars");
 const starCount = document.getElementById("starCount");
 const roundCount = document.getElementById("roundCount");
 const buddy = document.getElementById("buddy");
@@ -217,15 +217,28 @@ function refreshScoreboard() {
 }
 
 function spawnStarBurst() {
-  for (let i = 0; i < 8; i += 1) {
+  const positions = [
+    { x: 0, y: -78 },
+    { x: 55, y: -55 },
+    { x: 78, y: 0 },
+    { x: 55, y: 55 },
+    { x: 0, y: 78 },
+    { x: -55, y: 55 },
+    { x: -78, y: 0 },
+    { x: -55, y: -55 }
+  ];
+
+  positions.forEach((position, index) => {
     const star = document.createElement("span");
     star.className = "star-burst";
-    star.style.left = `${15 + Math.random() * 70}%`;
-    star.style.top = `${48 + Math.random() * 24}%`;
-    star.style.animationDelay = `${i * 45}ms`;
-    successStars.appendChild(star);
+    star.style.left = "50%";
+    star.style.top = "50%";
+    star.style.setProperty("--tx", `${position.x}px`);
+    star.style.setProperty("--ty", `${position.y}px`);
+    star.style.animationDelay = `${index * 35}ms`;
+    mergeStars.appendChild(star);
     window.setTimeout(() => star.remove(), 1200);
-  }
+  });
 }
 
 function resetBoardVisuals() {
