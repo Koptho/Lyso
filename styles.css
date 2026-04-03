@@ -435,7 +435,7 @@ h1 {
   animation: spin 18s linear infinite;
 }
 
-.merge-syllable {
+.merge-target {
   position: relative;
   z-index: 1;
   width: 130px;
@@ -444,8 +444,43 @@ h1 {
   background: linear-gradient(180deg, #fff9d1, #fff);
   display: grid;
   place-items: center;
+  overflow: hidden;
+}
+
+.merge-vowel,
+.merge-syllable {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   font-size: 2.7rem;
   color: var(--warm-deep);
+  transition: opacity 160ms ease, transform 180ms ease;
+}
+
+.merge-vowel {
+  opacity: 0;
+  transform: scale(0.75);
+}
+
+.merge-syllable {
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.merge-zone.show-vowel .merge-vowel {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.merge-zone.show-syllable .merge-vowel {
+  opacity: 0;
+  transform: scale(1.14);
+}
+
+.merge-zone.show-syllable .merge-syllable {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .letter-char {

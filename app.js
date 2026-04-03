@@ -26,6 +26,7 @@ const vowelChar = document.getElementById("vowelChar");
 const consonantSound = document.getElementById("consonantSound");
 const vowelSound = document.getElementById("vowelSound");
 const mergeZone = document.getElementById("mergeZone");
+const mergeVowel = document.getElementById("mergeVowel");
 const mergeSyllable = document.getElementById("mergeSyllable");
 const fusionFill = document.getElementById("fusionFill");
 const successText = document.getElementById("successText");
@@ -237,7 +238,7 @@ function resetBoardVisuals() {
   draggableLetter.setAttribute("aria-valuenow", "0");
   draggableLetter.classList.remove("fusing", "dragging");
   vowelLetter.classList.remove("fusing");
-  mergeZone.classList.remove("active");
+  mergeZone.classList.remove("active", "show-vowel", "show-syllable");
   fusionFill.style.width = "0%";
   successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
 }
@@ -250,6 +251,7 @@ function loadLevel() {
   vowelChar.textContent = level.vowel;
   consonantSound.textContent = "første lyd";
   vowelSound.textContent = "andre lyd";
+  mergeVowel.textContent = level.vowel;
   mergeSyllable.textContent = level.label;
   successText.textContent = `Dra ${level.consonant} roleg mot ${level.vowel} og bygg ${level.label}.`;
   helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
@@ -269,6 +271,8 @@ function applyDragPosition(progress) {
   fusionFill.style.width = `${Math.round(progress * 100)}%`;
   draggableLetter.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
   mergeZone.classList.toggle("active", progress > 0.62);
+  mergeZone.classList.toggle("show-vowel", progress > 0.68 && progress <= 0.88);
+  mergeZone.classList.toggle("show-syllable", progress > 0.88);
   draggableLetter.classList.toggle("fusing", progress > 0.55);
   vowelLetter.classList.toggle("fusing", progress > 0.7);
 }
