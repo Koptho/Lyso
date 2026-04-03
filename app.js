@@ -231,8 +231,8 @@ function spawnStarBurst() {
   positions.forEach((position, index) => {
     const star = document.createElement("span");
     star.className = "star-burst";
-    star.style.left = "50%";
-    star.style.top = "50%";
+    star.style.left = "calc(50% - 13px)";
+    star.style.top = "calc(50% - 13px)";
     star.style.setProperty("--tx", `${position.x}px`);
     star.style.setProperty("--ty", `${position.y}px`);
     star.style.animationDelay = `${index * 35}ms`;
@@ -309,8 +309,10 @@ function completeMerge() {
   }
 
   const level = currentLevel();
+  state.progress = 1;
   state.hasMerged = true;
   state.isDragging = false;
+  applyDragPosition(1);
   state.stars += 3;
   state.streak += 1;
   state.rescued += 1;
@@ -381,6 +383,11 @@ function handlePointerUp() {
   state.isDragging = false;
   state.progressStart = state.progress;
   draggableLetter.classList.remove("dragging");
+
+  if (!state.hasMerged && state.progress >= 0.88) {
+    completeMerge();
+    return;
+  }
 
   if (!state.hasMerged) {
     state.progress = 0;
