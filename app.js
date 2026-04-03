@@ -16,7 +16,8 @@ const state = {
   progressStart: 0,
   maxDrag: 0,
   mobileLayout: false,
-  completed: new Set()
+  completed: new Set(),
+  nextLevelTimeout: null
 };
 
 const draggableLetter = document.getElementById("draggableLetter");
@@ -238,6 +239,10 @@ function spawnStarBurst() {
 }
 
 function resetBoardVisuals() {
+  if (state.nextLevelTimeout) {
+    window.clearTimeout(state.nextLevelTimeout);
+    state.nextLevelTimeout = null;
+  }
   state.progress = 0;
   state.pendingProgress = 0;
   state.hasMerged = false;
@@ -245,6 +250,7 @@ function resetBoardVisuals() {
   state.progressStart = 0;
   draggableLetter.style.transform = "translate(0px, -50%)";
   draggableLetter.style.removeProperty("--merge-x");
+  draggableLetter.style.visibility = "visible";
   draggableLetter.setAttribute("aria-valuenow", "0");
   draggableLetter.classList.remove("fusing", "dragging", "merged");
   vowelLetter.classList.remove("fusing");
@@ -327,7 +333,12 @@ function completeMerge() {
   refreshScoreboard();
 
   window.setTimeout(() => {
+    draggableLetter.style.visibility = "hidden";
+  }, 180);
+
+  state.nextLevelTimeout = window.setTimeout(() => {
     state.levelIndex = findNextLevelIndex();
+    state.nextLevelTimeout = null;
     loadLevel();
   }, 1500);
 }

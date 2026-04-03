@@ -386,6 +386,7 @@ h1 {
   -webkit-user-drag: none;
   transition:
     transform 180ms ease,
+    opacity 180ms ease,
     border-radius 200ms ease,
     box-shadow 180ms ease,
     background 180ms ease;
