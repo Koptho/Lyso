@@ -360,17 +360,6 @@ h1 {
   height: 230px;
 }
 
-.glow-line {
-  position: absolute;
-  left: 155px;
-  right: 175px;
-  top: 50%;
-  height: 18px;
-  border-radius: 999px;
-  transform: translateY(-50%);
-  background: linear-gradient(90deg, rgba(48, 188, 237, 0.2), rgba(255, 200, 61, 0.5));
-}
-
 .letter-tile {
   position: absolute;
   top: 50%;
@@ -407,88 +396,14 @@ h1 {
   right: 0;
   background: linear-gradient(180deg, #8ce1ff, #30bced);
   box-shadow: 0 20px 26px rgba(48, 188, 237, 0.24);
-}
-
-.merge-zone {
-  display: none;
-  position: absolute;
-  top: 50%;
-  right: 154px;
-  width: 188px;
-  height: 188px;
-  transform: translateY(-50%) scale(0.86);
-  opacity: 0.52;
-  display: grid;
-  place-items: center;
-  transition: transform 180ms ease, opacity 180ms ease;
-}
-
-.merge-zone.active {
-  opacity: 1;
-  transform: translateY(-50%) scale(1);
-}
-
-.merge-ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 8px dashed rgba(255, 200, 61, 0.76);
-  animation: spin 18s linear infinite;
-}
-
-.merge-target {
-  position: relative;
-  z-index: 1;
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #fff9d1, #fff);
-  display: grid;
-  place-items: center;
   overflow: hidden;
 }
 
-.merge-stars {
+.receiver-stars {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 2;
-}
-
-.merge-vowel,
-.merge-syllable {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 2.7rem;
-  color: var(--warm-deep);
-  transition: opacity 160ms ease, transform 180ms ease;
-}
-
-.merge-vowel {
-  opacity: 0;
-  transform: scale(0.75);
-}
-
-.merge-syllable {
-  opacity: 0;
-  transform: scale(0.7);
-}
-
-.merge-zone.show-vowel .merge-vowel {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.merge-zone.show-syllable .merge-vowel {
-  opacity: 0;
-  transform: scale(1.14);
-}
-
-.merge-zone.show-syllable .merge-syllable {
-  opacity: 1;
-  transform: scale(1);
 }
 
 .letter-char {
@@ -499,33 +414,6 @@ h1 {
 
 .letter-sound {
   font-size: 1.1rem;
-}
-
-.fusion-meter {
-  margin-top: 20px;
-}
-
-.fusion-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 1rem;
-  margin-bottom: 8px;
-}
-
-.fusion-bar {
-  width: 100%;
-  height: 20px;
-  border-radius: 999px;
-  background: rgba(22, 50, 79, 0.09);
-  overflow: hidden;
-}
-
-.fusion-fill {
-  width: 0;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--cool), var(--warm), var(--gold));
-  transition: width 120ms linear;
 }
 
 .success-card {
@@ -547,7 +435,7 @@ h1 {
   animation: float-star 1s ease forwards;
 }
 
-.merge-stars .star-burst {
+.receiver-stars .star-burst {
   animation: orbit-star 0.95s ease forwards;
 }
 
@@ -696,15 +584,6 @@ h1 {
   }
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @keyframes bounce {
   0%,
   100% {
@@ -737,16 +616,6 @@ h1 {
     height: 280px;
   }
 
-  .merge-zone {
-    right: 106px;
-    width: 160px;
-    height: 160px;
-  }
-
-  .merge-syllable {
-    width: 112px;
-    height: 112px;
-  }
 }
 
 @media (max-width: 620px) {
@@ -785,23 +654,6 @@ h1 {
 
   .vowel-tile {
     top: 75%;
-  }
-
-  .merge-zone {
-    top: 54%;
-    right: 50%;
-    transform: translate(50%, -50%) scale(0.84);
-  }
-
-  .merge-zone.active {
-    transform: translate(50%, -50%) scale(1);
-  }
-
-  .glow-line {
-    inset: auto 86px 72px 86px;
-    top: auto;
-    bottom: 74px;
-    transform: none;
   }
 
   .helper-banner {

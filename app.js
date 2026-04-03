@@ -25,11 +25,7 @@ const consonantChar = document.getElementById("consonantChar");
 const vowelChar = document.getElementById("vowelChar");
 const consonantSound = document.getElementById("consonantSound");
 const vowelSound = document.getElementById("vowelSound");
-const mergeZone = document.getElementById("mergeZone");
-const mergeStars = document.getElementById("mergeStars");
-const mergeVowel = document.getElementById("mergeVowel");
-const mergeSyllable = document.getElementById("mergeSyllable");
-const fusionFill = document.getElementById("fusionFill");
+const receiverStars = document.getElementById("receiverStars");
 const successText = document.getElementById("successText");
 const successCard = document.getElementById("successCard");
 const starCount = document.getElementById("starCount");
@@ -236,7 +232,7 @@ function spawnStarBurst() {
     star.style.setProperty("--tx", `${position.x}px`);
     star.style.setProperty("--ty", `${position.y}px`);
     star.style.animationDelay = `${index * 35}ms`;
-    mergeStars.appendChild(star);
+    receiverStars.appendChild(star);
     window.setTimeout(() => star.remove(), 1200);
   });
 }
@@ -251,8 +247,6 @@ function resetBoardVisuals() {
   draggableLetter.setAttribute("aria-valuenow", "0");
   draggableLetter.classList.remove("fusing", "dragging");
   vowelLetter.classList.remove("fusing");
-  mergeZone.classList.remove("active", "show-vowel", "show-syllable");
-  fusionFill.style.width = "0%";
   successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
 }
 
@@ -264,8 +258,6 @@ function loadLevel() {
   vowelChar.textContent = level.vowel;
   consonantSound.textContent = "første lyd";
   vowelSound.textContent = "andre lyd";
-  mergeVowel.textContent = level.vowel;
-  mergeSyllable.textContent = level.label;
   successText.textContent = `Dra ${level.consonant} roleg mot ${level.vowel} og bygg ${level.label}.`;
   helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
   buddyStatus.textContent = "Lyso ventar på hjelp.";
@@ -281,11 +273,7 @@ function applyDragPosition(progress) {
     draggableLetter.style.transform = `translate(${x}px, -50%)`;
   }
 
-  fusionFill.style.width = `${Math.round(progress * 100)}%`;
   draggableLetter.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
-  mergeZone.classList.toggle("active", progress > 0.62);
-  mergeZone.classList.toggle("show-vowel", progress > 0.68);
-  mergeZone.classList.remove("show-syllable");
   draggableLetter.classList.toggle("fusing", progress > 0.55);
   vowelLetter.classList.toggle("fusing", progress > 0.7);
 }
@@ -318,8 +306,8 @@ function completeMerge() {
   state.rescued += 1;
   state.completed.add(level.id);
 
-  mergeZone.classList.add("active", "show-syllable");
-  mergeZone.classList.remove("show-vowel");
+  vowelChar.textContent = level.label;
+  vowelSound.textContent = "stavelse";
   successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
   successText.textContent = `${level.label}! Flott jobba. Du fekk 3 stjerner.`;
   helperBanner.textContent = `Hurra! ${level.label} blei ferdig.`;

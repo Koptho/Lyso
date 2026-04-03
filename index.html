@@ -94,8 +94,6 @@
             Trykk på den varme bokstaven og dra henne roleg mot vokalen.
           </p>
           <div class="track" id="track" aria-label="Dra bokstaven mot vokalen">
-            <div class="glow-line" id="glowLine"></div>
-
             <div
               class="letter-tile consonant-tile"
               id="draggableLetter"
@@ -110,29 +108,11 @@
               <span class="letter-sound" id="consonantSound">første lyd</span>
             </div>
 
-            <div class="merge-zone" id="mergeZone" aria-hidden="true">
-              <div class="merge-ring"></div>
-              <div class="merge-stars" id="mergeStars" aria-hidden="true"></div>
-              <div class="merge-target" id="mergeTarget">
-                <span class="merge-vowel" id="mergeVowel">O</span>
-                <span class="merge-syllable" id="mergeSyllable">SO</span>
-              </div>
-            </div>
-
             <div class="letter-tile vowel-tile" id="vowelLetter">
+              <div class="receiver-stars" id="receiverStars" aria-hidden="true"></div>
               <span class="letter-char" id="vowelChar">O</span>
               <span class="letter-sound" id="vowelSound">andre lyd</span>
             </div>
-          </div>
-        </div>
-
-        <div class="fusion-meter">
-          <div class="fusion-labels">
-            <span>Dra saman</span>
-            <span>Smelt saman</span>
-          </div>
-          <div class="fusion-bar">
-            <div class="fusion-fill" id="fusionFill"></div>
           </div>
         </div>
 
