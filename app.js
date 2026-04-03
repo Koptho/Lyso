@@ -236,11 +236,14 @@ function spawnStarBurst() {
   });
 }
 
-function resetBoardVisuals() {
+function cancelPendingAdvance() {
   if (state.nextLevelTimeout) {
     window.clearTimeout(state.nextLevelTimeout);
     state.nextLevelTimeout = null;
   }
+}
+
+function resetBoardVisuals() {
   state.progress = 0;
   state.pendingProgress = 0;
   state.hasMerged = false;
@@ -265,6 +268,11 @@ function loadLevel() {
   helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
   buddyStatus.textContent = "Lyso ventar på hjelp.";
   refreshScoreboard();
+}
+
+function advanceToNextLevel() {
+  state.levelIndex = findNextLevelIndex();
+  loadLevel();
 }
 
 function applyDragPosition(progress) {
@@ -332,9 +340,9 @@ function completeMerge() {
   }, 180);
 
   state.nextLevelTimeout = window.setTimeout(() => {
-    state.levelIndex = findNextLevelIndex();
+    vowelChar.textContent = currentLevel().vowel;
     state.nextLevelTimeout = null;
-    loadLevel();
+    advanceToNextLevel();
   }, 1500);
 }
 
@@ -450,6 +458,7 @@ function handleKeyboard(event) {
 }
 
 function applyWeeklySyllables(syllables, sourceLabel) {
+  cancelPendingAdvance();
   state.levels = buildLevels(syllables);
   state.levelIndex = 0;
   state.stars = 0;
