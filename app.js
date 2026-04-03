@@ -271,8 +271,8 @@ function applyDragPosition(progress) {
   fusionFill.style.width = `${Math.round(progress * 100)}%`;
   draggableLetter.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
   mergeZone.classList.toggle("active", progress > 0.62);
-  mergeZone.classList.toggle("show-vowel", progress > 0.68 && progress <= 0.88);
-  mergeZone.classList.toggle("show-syllable", progress > 0.88);
+  mergeZone.classList.toggle("show-vowel", progress > 0.68);
+  mergeZone.classList.remove("show-syllable");
   draggableLetter.classList.toggle("fusing", progress > 0.55);
   vowelLetter.classList.toggle("fusing", progress > 0.7);
 }
@@ -303,6 +303,8 @@ function completeMerge() {
   state.rescued += 1;
   state.completed.add(level.id);
 
+  mergeZone.classList.add("active", "show-syllable");
+  mergeZone.classList.remove("show-vowel");
   successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
   successText.textContent = `${level.label}! Flott jobba. Du fekk 3 stjerner.`;
   helperBanner.textContent = `Hurra! ${level.label} blei ferdig.`;
