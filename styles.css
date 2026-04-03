@@ -360,6 +360,17 @@ h1 {
   height: 230px;
 }
 
+.glow-line {
+  position: absolute;
+  left: 132px;
+  right: 132px;
+  top: 50%;
+  height: 14px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(255, 200, 61, 0.35), rgba(48, 188, 237, 0.35));
+}
+
 .letter-tile {
   position: absolute;
   top: 50%;
@@ -382,9 +393,14 @@ h1 {
 
 .consonant-tile {
   left: 0;
+  z-index: 1;
   cursor: grab;
   background: linear-gradient(180deg, #ffcf73, #ff9457);
   box-shadow: 0 20px 26px rgba(255, 140, 66, 0.25);
+}
+
+.consonant-tile.merged {
+  opacity: 0;
 }
 
 .consonant-tile.dragging {
@@ -394,6 +410,7 @@ h1 {
 
 .vowel-tile {
   right: 0;
+  z-index: 3;
   background: linear-gradient(180deg, #8ce1ff, #30bced);
   box-shadow: 0 20px 26px rgba(48, 188, 237, 0.24);
   overflow: hidden;
@@ -654,6 +671,17 @@ h1 {
 
   .vowel-tile {
     top: 75%;
+  }
+
+  .glow-line {
+    left: 50%;
+    right: auto;
+    top: 54%;
+    bottom: auto;
+    width: 14px;
+    height: 116px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(255, 200, 61, 0.35), rgba(48, 188, 237, 0.35));
   }
 
   .helper-banner {

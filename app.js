@@ -244,8 +244,9 @@ function resetBoardVisuals() {
   state.isDragging = false;
   state.progressStart = 0;
   draggableLetter.style.transform = "translate(0px, -50%)";
+  draggableLetter.style.removeProperty("--merge-x");
   draggableLetter.setAttribute("aria-valuenow", "0");
-  draggableLetter.classList.remove("fusing", "dragging");
+  draggableLetter.classList.remove("fusing", "dragging", "merged");
   vowelLetter.classList.remove("fusing");
   successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
 }
@@ -265,15 +266,22 @@ function loadLevel() {
 }
 
 function applyDragPosition(progress) {
+  const merged = progress >= 0.98;
   if (state.mobileLayout) {
     const y = progress * state.maxDrag;
-    draggableLetter.style.transform = `translate(0px, calc(-50% + ${y}px))`;
+    draggableLetter.style.transform = merged
+      ? "translate(0px, calc(-50% + 0px))"
+      : `translate(0px, calc(-50% + ${y}px))`;
   } else {
     const x = progress * state.maxDrag;
-    draggableLetter.style.transform = `translate(${x}px, -50%)`;
+    draggableLetter.style.transform = merged
+      ? "translate(0px, -50%)"
+      : `translate(${x}px, -50%)`;
+    draggableLetter.style.setProperty("--merge-x", `${x}px`);
   }
 
   draggableLetter.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
+  draggableLetter.classList.toggle("merged", merged);
   draggableLetter.classList.toggle("fusing", progress > 0.55);
   vowelLetter.classList.toggle("fusing", progress > 0.7);
 }
