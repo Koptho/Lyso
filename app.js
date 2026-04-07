@@ -327,7 +327,7 @@ function completeMerge() {
   vowelChar.textContent = level.vowel;
   successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
   successText.textContent = `${level.label}! Flott jobba. Du fekk 3 stjerner.`;
-  helperBanner.textContent = `Hurra! ${level.label} blei ferdig.`;
+  helperBanner.textContent = `Hurra! Sjå på ${level.vowel} og ta deg litt tid før neste oppgåve.`;
   buddy.classList.remove("saved");
   void buddy.offsetWidth;
   buddy.classList.add("saved");
@@ -343,7 +343,7 @@ function completeMerge() {
     vowelChar.textContent = currentLevel().vowel;
     state.nextLevelTimeout = null;
     advanceToNextLevel();
-  }, 1500);
+  }, 2800);
 }
 
 function setProgress(progress) {
