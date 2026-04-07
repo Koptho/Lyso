@@ -140,6 +140,7 @@ function updateJourneyMap() {
 
     const card = document.createElement("div");
     card.className = "journey-node unlocked";
+    card.setAttribute("aria-label", `Gruppe ${stageNumber}: ${levels.map((level) => level.label).join(", ")}`);
     if (done) {
       card.classList.add("done");
     }
@@ -147,10 +148,6 @@ function updateJourneyMap() {
       card.classList.add("current");
     }
     card.style.setProperty("--node-accent", stageNumber % 2 === 0 ? "#35c26b" : "#ffb347");
-
-    const title = document.createElement("p");
-    title.className = "journey-node-title";
-    title.textContent = `Vekegruppe ${stageNumber}`;
 
     const trail = document.createElement("div");
     trail.className = "journey-mini-trail";
@@ -166,11 +163,7 @@ function updateJourneyMap() {
       trail.appendChild(bead);
     });
 
-    const meta = document.createElement("p");
-    meta.className = "journey-node-meta";
-    meta.textContent = levels.map((level) => level.label).join(" · ");
-
-    card.append(title, trail, meta);
+    card.appendChild(trail);
     journeyMap.appendChild(card);
   });
 }

@@ -15,15 +15,6 @@
   <body>
     <main class="app-shell">
       <section class="hero-card">
-        <div class="hero-copy">
-          <p class="eyebrow">Stavingsøving</p>
-          <h1>Hjelp Lyso å byggje stavingar</h1>
-          <p class="intro">
-            Dra den første bokstaven bort til vokalen. Sjå korleis bokstavane kjem
-            saman og blir til ei ny stavelse.
-          </p>
-        </div>
-
         <div class="reward-panel" aria-live="polite">
           <div class="buddy-wrap">
             <div class="buddy" id="buddy" aria-hidden="true">
@@ -31,16 +22,16 @@
               <div class="buddy-eye buddy-eye-right"></div>
               <div class="buddy-mouth"></div>
             </div>
-            <p class="buddy-status" id="buddyStatus">Lyso ventar på hjelp.</p>
+            <p class="buddy-status sr-only" id="buddyStatus">Lyso ventar på hjelp.</p>
           </div>
 
           <div class="scoreboard">
             <div class="score-pill">
-              <span class="score-label">Stjerner</span>
+              <span class="score-label" aria-hidden="true">✦</span>
               <span class="score-value" id="starCount">0</span>
             </div>
             <div class="score-pill">
-              <span class="score-label">Runde</span>
+              <span class="score-label" aria-hidden="true">●</span>
               <span class="score-value" id="roundCount">1</span>
             </div>
           </div>
@@ -49,48 +40,35 @@
 
       <section class="journey-card">
         <div class="journey-head">
-          <div>
-            <p class="journey-eyebrow">Lyso-reisa</p>
-            <h2 class="journey-title">Samle lysstjerner og øv på vekas stavingar</h2>
-          </div>
           <div class="journey-badges">
-            <div class="journey-pill">
-              <span class="journey-pill-label">Streak</span>
+            <div class="journey-pill" aria-label="Rekke">
+              <span class="journey-pill-label" aria-hidden="true">✦✦</span>
               <span class="journey-pill-value" id="streakCount">0</span>
             </div>
-            <div class="journey-pill">
-              <span class="journey-pill-label">Redda</span>
+            <div class="journey-pill" aria-label="Fullførte">
+              <span class="journey-pill-label" aria-hidden="true">○○</span>
               <span class="journey-pill-value" id="rescuedCount">0</span>
             </div>
           </div>
         </div>
 
         <div class="journey-map" id="journeyMap" aria-label="Progresjonskart"></div>
-
-        <div class="goal-strip">
-          <div class="goal-card">
-            <span class="goal-label">Mål no</span>
-            <strong class="goal-value" id="goalText">Bygg 2 stavingar for å opne neste sti.</strong>
-          </div>
-          <div class="goal-card">
-            <span class="goal-label">Vekepakke</span>
-            <strong class="goal-value" id="weekPackLabel">Standard stavingar</strong>
-          </div>
-        </div>
+        <p class="sr-only" id="goalText">Bygg 2 stavingar for å opne neste sti.</p>
+        <p class="sr-only" id="weekPackLabel">Standard stavingar</p>
       </section>
 
       <section class="play-card">
         <div class="instruction-row">
-          <button class="sound-button" id="playExampleButton" type="button">
-            Vis eksempel
+          <button class="sound-button icon-button" id="playExampleButton" type="button" aria-label="Vis eksempel">
+            ▶
           </button>
-          <button class="sound-button ghost" id="repeatButton" type="button">
-            Prøv same stavelse igjen
+          <button class="sound-button ghost icon-button" id="repeatButton" type="button" aria-label="Prøv same stavelse igjen">
+            ↺
           </button>
         </div>
 
         <div class="track-wrap">
-          <p class="helper-banner" id="helperBanner" aria-live="polite">
+          <p class="helper-banner sr-only" id="helperBanner" aria-live="polite">
             Trykk på den varme bokstaven og dra henne roleg mot vokalen.
           </p>
           <div class="track" id="track" aria-label="Dra bokstaven mot vokalen">
@@ -115,7 +93,7 @@
           </div>
         </div>
 
-        <div class="success-card" id="successCard" aria-live="polite">
+        <div class="success-card sr-only" id="successCard" aria-live="polite">
           <p class="success-title">Prøv å byggje stavinga</p>
           <p class="success-text" id="successText">
             Dra bokstaven sakte mot vokalen og sjå korleis ho blir til ei stavelse.
@@ -125,13 +103,9 @@
       </section>
 
       <section class="choices-card" aria-label="Komande stavingar">
-        <p class="choices-title">Opplåste stavingar</p>
         <div class="choices-list" id="choicesList"></div>
-        <p class="choices-note">
-          Du kan byte ut vekas stavingar i panelet under.
-        </p>
         <details class="config-panel">
-          <summary>Vaksenmodus: legg inn vekas stavingar</summary>
+          <summary>Vaksenmodus</summary>
           <label class="config-label" for="syllableInput">
             Skriv éi stavelse per linje. To bokstavar fungerer best, til dømes `ma`, `so`, `li`.
           </label>
