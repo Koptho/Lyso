@@ -1,5 +1,7 @@
 const STORAGE_KEY = "lyso-weekly-syllables";
 const DEFAULT_SYLLABLES = ["SO", "MA", "LE", "NI", "RO"];
+const AUTO_MERGE_THRESHOLD = 0.995;
+const RELEASE_MERGE_THRESHOLD = 0.985;
 
 const state = {
   levels: [],
@@ -269,22 +271,17 @@ function advanceToNextLevel() {
 }
 
 function applyDragPosition(progress) {
-  const merged = progress >= 0.98;
   if (state.mobileLayout) {
     const y = progress * state.maxDrag;
-    draggableLetter.style.transform = merged
-      ? "translate(0px, calc(-50% + 0px))"
-      : `translate(0px, calc(-50% + ${y}px))`;
+    draggableLetter.style.transform = `translate(0px, calc(-50% + ${y}px))`;
   } else {
     const x = progress * state.maxDrag;
-    draggableLetter.style.transform = merged
-      ? "translate(0px, -50%)"
-      : `translate(${x}px, -50%)`;
+    draggableLetter.style.transform = `translate(${x}px, -50%)`;
     draggableLetter.style.setProperty("--merge-x", `${x}px`);
   }
 
   draggableLetter.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
-  draggableLetter.classList.toggle("merged", merged);
+  draggableLetter.classList.toggle("merged", progress >= AUTO_MERGE_THRESHOLD);
   draggableLetter.classList.toggle("fusing", progress > 0.55);
   vowelLetter.classList.toggle("fusing", progress > 0.7);
 }
@@ -342,7 +339,7 @@ function completeMerge() {
 function setProgress(progress) {
   state.progress = clamp(progress, 0, 1);
   applyDragPosition(state.progress);
-  if (state.progress > 0.93) {
+  if (state.progress >= AUTO_MERGE_THRESHOLD) {
     completeMerge();
   }
 }
@@ -387,7 +384,7 @@ function handlePointerUp() {
   state.progressStart = state.progress;
   draggableLetter.classList.remove("dragging");
 
-  if (!state.hasMerged && state.progress >= 0.88) {
+  if (!state.hasMerged && state.progress >= RELEASE_MERGE_THRESHOLD) {
     completeMerge();
     return;
   }
