@@ -343,7 +343,7 @@ function completeMerge() {
     vowelChar.textContent = currentLevel().vowel;
     state.nextLevelTimeout = null;
     advanceToNextLevel();
-  }, 2800);
+  }, 4000);
 }
 
 function setProgress(progress) {
