@@ -1,7 +1,7 @@
 const STORAGE_KEY = "lyso-weekly-syllables";
 const DEFAULT_SYLLABLES = ["SO", "MA", "LE", "NI", "RO"];
-const AUTO_MERGE_THRESHOLD = 0.995;
-const RELEASE_MERGE_THRESHOLD = 0.985;
+const AUTO_MERGE_THRESHOLD = 0.999;
+const RELEASE_MERGE_THRESHOLD = 0.999;
 
 const state = {
   levels: [],
@@ -92,10 +92,10 @@ function refreshLayoutMetrics() {
   if (state.mobileLayout) {
     const vowelTop = vowelLetter.offsetTop;
     const consonantTop = draggableLetter.offsetTop;
-    state.maxDrag = Math.max(0, vowelTop - consonantTop - 10);
+    state.maxDrag = Math.max(0, vowelTop - consonantTop);
     return;
   }
-  state.maxDrag = Math.max(0, vowelLetter.offsetLeft - draggableLetter.offsetLeft - 150);
+  state.maxDrag = Math.max(0, vowelLetter.offsetLeft - draggableLetter.offsetLeft);
 }
 
 function loadStoredSyllables() {
