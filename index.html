@@ -10,12 +10,14 @@
     />
     <meta name="theme-color" content="#ffd85f" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=20260413b" />
+    <link rel="stylesheet" href="./styles.css?v=20260413c" />
   </head>
   <body>
     <main class="app-shell">
       <section class="hero-card">
         <div class="reward-panel" aria-live="polite">
+          <h1 class="hero-title">Lyso</h1>
+
           <div class="buddy-wrap">
             <div class="buddy" id="buddy" aria-hidden="true">
               <div class="buddy-eye buddy-eye-left"></div>
@@ -24,34 +26,10 @@
             </div>
             <p class="buddy-status sr-only" id="buddyStatus">Lyso ventar på hjelp.</p>
           </div>
-
-          <div class="scoreboard">
-            <div class="score-pill">
-              <span class="score-label" aria-hidden="true">✦</span>
-              <span class="score-value" id="starCount">0</span>
-            </div>
-            <div class="score-pill">
-              <span class="score-label" aria-hidden="true">●</span>
-              <span class="score-value" id="roundCount">1</span>
-            </div>
-          </div>
         </div>
       </section>
 
       <section class="journey-card">
-        <div class="journey-head">
-          <div class="journey-badges">
-            <div class="journey-pill" aria-label="Rekke">
-              <span class="journey-pill-label" aria-hidden="true">✦✦</span>
-              <span class="journey-pill-value" id="streakCount">0</span>
-            </div>
-            <div class="journey-pill" aria-label="Fullførte">
-              <span class="journey-pill-label" aria-hidden="true">○○</span>
-              <span class="journey-pill-value" id="rescuedCount">0</span>
-            </div>
-          </div>
-        </div>
-
         <div class="journey-map" id="journeyMap" aria-label="Progresjonskart"></div>
         <p class="sr-only" id="goalText">Bygg 2 stavingar for å opne neste sti.</p>
         <p class="sr-only" id="weekPackLabel">Standard stavingar</p>
@@ -59,9 +37,6 @@
 
       <section class="play-card">
         <div class="instruction-row">
-          <button class="sound-button icon-button" id="playExampleButton" type="button" aria-label="Vis eksempel">
-            ▶
-          </button>
           <button class="sound-button ghost icon-button" id="repeatButton" type="button" aria-label="Prøv same stavelse igjen">
             ↺
           </button>
@@ -133,6 +108,6 @@ ro</textarea>
       </section>
     </main>
 
-    <script src="./app.js?v=20260413b"></script>
+    <script src="./app.js?v=20260413c"></script>
   </body>
 </html>

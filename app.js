@@ -6,9 +6,6 @@ const RELEASE_MERGE_THRESHOLD = 0.999;
 const state = {
   levels: [],
   levelIndex: 0,
-  stars: 0,
-  streak: 0,
-  rescued: 0,
   progress: 0,
   pendingProgress: 0,
   framePending: false,
@@ -29,17 +26,12 @@ const vowelChar = document.getElementById("vowelChar");
 const receiverStars = document.getElementById("receiverStars");
 const successText = document.getElementById("successText");
 const successCard = document.getElementById("successCard");
-const starCount = document.getElementById("starCount");
-const roundCount = document.getElementById("roundCount");
 const buddy = document.getElementById("buddy");
 const buddyStatus = document.getElementById("buddyStatus");
-const playExampleButton = document.getElementById("playExampleButton");
 const repeatButton = document.getElementById("repeatButton");
 const choicesList = document.getElementById("choicesList");
 const helperBanner = document.getElementById("helperBanner");
 const audioNote = document.getElementById("audioNote");
-const streakCount = document.getElementById("streakCount");
-const rescuedCount = document.getElementById("rescuedCount");
 const journeyMap = document.getElementById("journeyMap");
 const goalText = document.getElementById("goalText");
 const weekPackLabel = document.getElementById("weekPackLabel");
@@ -196,10 +188,6 @@ function updateChoiceList() {
 }
 
 function refreshScoreboard() {
-  starCount.textContent = String(state.stars);
-  roundCount.textContent = `${state.levelIndex + 1}/${state.levels.length}`;
-  streakCount.textContent = String(state.streak);
-  rescuedCount.textContent = String(state.rescued);
   updateJourneyMap();
   updateChoiceList();
   updateGoalText();
@@ -309,9 +297,6 @@ function completeMerge() {
   state.hasMerged = true;
   state.isDragging = false;
   applyDragPosition(1);
-  state.stars += 3;
-  state.streak += 1;
-  state.rescued += 1;
   state.completed.add(level.id);
 
   vowelChar.textContent = level.vowel;
@@ -392,7 +377,6 @@ function handlePointerUp() {
   if (!state.hasMerged) {
     state.progress = 0;
     state.pendingProgress = 0;
-    state.streak = 0;
     applyDragPosition(0);
     buddyStatus.textContent = "Prøv ein gong til. Dra roleg heilt fram.";
     helperBanner.textContent = "Fin øving. La oss prøve ein gong til heilt fram til vokalen.";
@@ -412,25 +396,6 @@ function onPointerDown(event) {
   draggableLetter.setPointerCapture(event.pointerId);
 }
 
-function playExample() {
-  loadLevel();
-  helperBanner.textContent = "Eg viser eit stille eksempel no.";
-  const steps = [0.08, 0.2, 0.35, 0.52, 0.68, 0.82, 0.96];
-  let index = 0;
-
-  const advance = () => {
-    if (index >= steps.length) {
-      completeMerge();
-      return;
-    }
-    setProgress(steps[index]);
-    index += 1;
-    window.setTimeout(advance, 180);
-  };
-
-  advance();
-}
-
 function handleKeyboard(event) {
   if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
     return;
@@ -439,7 +404,7 @@ function handleKeyboard(event) {
   event.preventDefault();
 
   if (event.key === "Enter" || event.key === " ") {
-    playExample();
+    loadLevel();
     return;
   }
 
@@ -451,9 +416,6 @@ function applyWeeklySyllables(syllables, sourceLabel) {
   cancelPendingAdvance();
   state.levels = buildLevels(syllables);
   state.levelIndex = 0;
-  state.stars = 0;
-  state.streak = 0;
-  state.rescued = 0;
   state.completed = new Set();
   syllableInput.value = syllables.join("\n");
   configStatus.textContent = sourceLabel;
@@ -481,7 +443,6 @@ draggableLetter.addEventListener("pointerup", handlePointerUp);
 draggableLetter.addEventListener("pointercancel", handlePointerUp);
 draggableLetter.addEventListener("keydown", handleKeyboard);
 
-playExampleButton.addEventListener("click", playExample);
 repeatButton.addEventListener("click", () => {
   loadLevel();
 });

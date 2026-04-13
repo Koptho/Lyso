@@ -60,8 +60,9 @@ body {
 .reward-panel {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 14px;
+  position: relative;
 }
 
 .buddy-wrap {
@@ -72,6 +73,19 @@ body {
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+}
+
+.hero-title {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  pointer-events: none;
 }
 
 .buddy {
@@ -137,31 +151,6 @@ body {
   border: 0;
 }
 
-.scoreboard {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(94px, 1fr));
-  gap: 12px;
-  flex: 1;
-}
-
-.score-pill {
-  background: #fff;
-  border-radius: 24px;
-  padding: 18px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.score-label {
-  font-size: 1.3rem;
-}
-
-.score-value {
-  font-size: 2rem;
-  color: var(--warm-deep);
-}
-
 .play-card {
   padding: 16px;
 }
@@ -212,40 +201,8 @@ body {
   padding: 14px 16px;
 }
 
-.journey-head {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-.journey-badges {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.journey-pill {
-  min-width: 86px;
-  padding: 10px 12px;
-  border-radius: 22px;
-  background: #fff;
-  text-align: center;
-}
-
-.journey-pill-label {
-  display: block;
-  font-size: 0.95rem;
-}
-
-.journey-pill-value {
-  display: block;
-  font-size: 1.5rem;
-  color: var(--warm-deep);
-}
-
 .journey-map {
-  margin-top: 12px;
+  margin-top: 4px;
   display: flex;
   gap: 10px;
   justify-content: center;
@@ -526,6 +483,12 @@ body {
     flex-direction: column;
   }
 
+  .hero-title {
+    position: static;
+    transform: none;
+    order: -1;
+  }
+
   .track {
     height: 280px;
   }
@@ -588,14 +551,6 @@ body {
   .sound-button {
     width: 100%;
     min-height: 56px;
-  }
-
-  .scoreboard {
-    grid-template-columns: 1fr;
-  }
-
-  .journey-badges {
-    justify-content: center;
   }
 
   .config-actions {
