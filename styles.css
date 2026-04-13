@@ -43,7 +43,6 @@ body {
 }
 
 .hero-card,
-.journey-card,
 .play-card,
 .choices-card {
   background: var(--card);
@@ -195,65 +194,6 @@ body {
     linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.9)),
     linear-gradient(90deg, rgba(48, 188, 237, 0.18), rgba(255, 200, 61, 0.22));
   padding: 20px 14px;
-}
-
-.journey-card {
-  padding: 14px 16px;
-}
-
-.journey-map {
-  margin-top: 4px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.journey-node {
-  width: 72px;
-  height: 72px;
-  padding: 0;
-  border-radius: 24px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.72));
-  border: 3px solid rgba(22, 50, 79, 0.08);
-  opacity: 0.6;
-  transition: transform 180ms ease, border-color 180ms ease, opacity 180ms ease;
-  display: grid;
-  place-items: center;
-}
-
-.journey-node.unlocked {
-  opacity: 1;
-}
-
-.journey-node.current {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--node-accent) 60%, white);
-}
-
-.journey-node.done {
-  background: linear-gradient(180deg, rgba(212, 255, 212, 0.92), rgba(255, 248, 212, 0.9));
-}
-
-.journey-mini-trail {
-  display: flex;
-  gap: 8px;
-  margin-top: 0;
-}
-
-.journey-bead {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: rgba(22, 50, 79, 0.12);
-}
-
-.journey-bead.done {
-  background: linear-gradient(180deg, #ffd85f, #ff9f4a);
-}
-
-.journey-bead.current {
-  outline: 4px solid rgba(48, 188, 237, 0.25);
 }
 
 .track {
@@ -501,7 +441,6 @@ body {
   }
 
   .play-card,
-  .journey-card,
   .hero-card,
   .choices-card {
     padding: 16px;

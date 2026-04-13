@@ -32,9 +32,6 @@ const repeatButton = document.getElementById("repeatButton");
 const choicesList = document.getElementById("choicesList");
 const helperBanner = document.getElementById("helperBanner");
 const audioNote = document.getElementById("audioNote");
-const journeyMap = document.getElementById("journeyMap");
-const goalText = document.getElementById("goalText");
-const weekPackLabel = document.getElementById("weekPackLabel");
 const syllableInput = document.getElementById("syllableInput");
 const saveConfigButton = document.getElementById("saveConfigButton");
 const resetConfigButton = document.getElementById("resetConfigButton");
@@ -102,66 +99,6 @@ function loadStoredSyllables() {
     : { syllables: DEFAULT_SYLLABLES, custom: false };
 }
 
-function updateWeekPackLabel() {
-  const usingDefault = state.levels.map((level) => level.label).join(",") === DEFAULT_SYLLABLES.join(",");
-  weekPackLabel.textContent = usingDefault ? "Standard stavingar" : "Eiga vekepakke";
-}
-
-function updateGoalText() {
-  const doneCount = state.completed.size;
-  const totalCount = state.levels.length;
-  const remaining = Math.max(0, totalCount - doneCount);
-
-  goalText.textContent = remaining > 0
-    ? `Det er att ${remaining} stavingar i denne vekepakka.`
-    : "Alle stavingane i vekepakka er fullførte. Du kan starte på nytt eller leggje inn nye.";
-}
-
-function updateJourneyMap() {
-  journeyMap.innerHTML = "";
-
-  const stages = new Map();
-  state.levels.forEach((level) => {
-    if (!stages.has(level.stage)) {
-      stages.set(level.stage, []);
-    }
-    stages.get(level.stage).push(level);
-  });
-
-  [...stages.entries()].forEach(([stageNumber, levels]) => {
-    const done = levels.every((level) => state.completed.has(level.id));
-    const current = levels.some((level) => level.id === currentLevel().id);
-
-    const card = document.createElement("div");
-    card.className = "journey-node unlocked";
-    card.setAttribute("aria-label", `Gruppe ${stageNumber}: ${levels.map((level) => level.label).join(", ")}`);
-    if (done) {
-      card.classList.add("done");
-    }
-    if (current) {
-      card.classList.add("current");
-    }
-    card.style.setProperty("--node-accent", stageNumber % 2 === 0 ? "#35c26b" : "#ffb347");
-
-    const trail = document.createElement("div");
-    trail.className = "journey-mini-trail";
-    levels.forEach((level) => {
-      const bead = document.createElement("span");
-      bead.className = "journey-bead";
-      if (state.completed.has(level.id)) {
-        bead.classList.add("done");
-      }
-      if (level.id === currentLevel().id) {
-        bead.classList.add("current");
-      }
-      trail.appendChild(bead);
-    });
-
-    card.appendChild(trail);
-    journeyMap.appendChild(card);
-  });
-}
-
 function updateChoiceList() {
   choicesList.innerHTML = "";
 
@@ -188,10 +125,7 @@ function updateChoiceList() {
 }
 
 function refreshScoreboard() {
-  updateJourneyMap();
   updateChoiceList();
-  updateGoalText();
-  updateWeekPackLabel();
 }
 
 function spawnStarBurst() {
