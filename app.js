@@ -1,5 +1,5 @@
 const STORAGE_KEY = "lyso-weekly-syllables";
-const DEFAULT_SYLLABLES = ["SO", "MA", "LE", "NI", "RO"];
+const DEFAULT_SYLLABLES = ["so", "ma", "le", "ni", "ro"];
 const AUTO_MERGE_THRESHOLD = 0.999;
 const RELEASE_MERGE_THRESHOLD = 0.999;
 
@@ -55,14 +55,14 @@ function currentLevel() {
 function parseSyllables(rawText) {
   const lines = rawText
     .split(/\r?\n/)
-    .map((line) => line.trim().toUpperCase())
+    .map((line) => line.trim().toLowerCase())
     .filter(Boolean);
 
   const cleaned = [];
   const seen = new Set();
 
   lines.forEach((line) => {
-    const lettersOnly = line.replace(/[^A-ZÆØÅ]/g, "");
+    const lettersOnly = line.replace(/[^a-zæøå]/g, "");
     if (lettersOnly.length < 2) {
       return;
     }
