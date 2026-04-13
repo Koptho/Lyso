@@ -28,7 +28,6 @@ const successText = document.getElementById("successText");
 const successCard = document.getElementById("successCard");
 const buddy = document.getElementById("buddy");
 const buddyStatus = document.getElementById("buddyStatus");
-const repeatButton = document.getElementById("repeatButton");
 const choicesList = document.getElementById("choicesList");
 const helperBanner = document.getElementById("helperBanner");
 const audioNote = document.getElementById("audioNote");
@@ -377,9 +376,6 @@ draggableLetter.addEventListener("pointerup", handlePointerUp);
 draggableLetter.addEventListener("pointercancel", handlePointerUp);
 draggableLetter.addEventListener("keydown", handleKeyboard);
 
-repeatButton.addEventListener("click", () => {
-  loadLevel();
-});
 saveConfigButton.addEventListener("click", saveWeeklySyllables);
 resetConfigButton.addEventListener("click", resetWeeklySyllables);
 

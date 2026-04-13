@@ -154,14 +154,6 @@ body {
   padding: 16px;
 }
 
-.instruction-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 14px;
-  justify-content: center;
-}
-
 .sound-button {
   border: 0;
   border-radius: 999px;
@@ -481,10 +473,6 @@ body {
     height: 116px;
     transform: translateX(-50%);
     background: linear-gradient(180deg, rgba(255, 200, 61, 0.35), rgba(48, 188, 237, 0.35));
-  }
-
-  .instruction-row {
-    justify-content: stretch;
   }
 
   .sound-button {
