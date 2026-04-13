@@ -28,6 +28,12 @@ body {
     linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
 }
 
+.letter-char,
+.choice-pill,
+.config-input {
+  text-transform: lowercase;
+}
+
 .app-shell {
   max-width: 980px;
   margin: 0 auto;
