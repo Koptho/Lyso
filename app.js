@@ -165,7 +165,7 @@ function resetBoardVisuals() {
   state.hasMerged = false;
   state.isDragging = false;
   state.progressStart = 0;
-  draggableLetter.style.transform = "translate(0px, -50%)";
+  draggableLetter.style.transform = "translate3d(0px, -50%, 0)";
   draggableLetter.style.removeProperty("--merge-x");
   draggableLetter.style.visibility = "visible";
   draggableLetter.setAttribute("aria-valuenow", "0");
@@ -194,10 +194,10 @@ function advanceToNextLevel() {
 function applyDragPosition(progress) {
   if (state.mobileLayout) {
     const y = progress * state.maxDrag;
-    draggableLetter.style.transform = `translate(0px, calc(-50% + ${y}px))`;
+    draggableLetter.style.transform = `translate3d(0px, calc(-50% + ${y}px), 0)`;
   } else {
     const x = progress * state.maxDrag;
-    draggableLetter.style.transform = `translate(${x}px, -50%)`;
+    draggableLetter.style.transform = `translate3d(${x}px, -50%, 0)`;
     draggableLetter.style.setProperty("--merge-x", `${x}px`);
   }
 

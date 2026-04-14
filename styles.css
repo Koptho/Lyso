@@ -210,13 +210,15 @@ body {
   width: 138px;
   height: 138px;
   border-radius: 38px;
-  transform: translateY(-50%);
+  transform: translate3d(0, -50%, 0);
   display: grid;
   place-items: center;
   text-align: center;
   user-select: none;
   touch-action: none;
   -webkit-user-drag: none;
+  backface-visibility: hidden;
+  will-change: transform;
   transition:
     transform 180ms ease,
     opacity 180ms ease,
@@ -239,6 +241,7 @@ body {
 
 .consonant-tile.dragging {
   cursor: grabbing;
+  transition: none;
   box-shadow: 0 26px 36px rgba(255, 91, 91, 0.28);
 }
 
