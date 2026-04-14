@@ -1,12 +1,14 @@
-# Stavelserommet
+# Lyso
 
-Ein liten lokal nettapp for å øve på å trekkje saman to bokstavar til ei stavelse.
+Ein enkel nettapp for å øve på å trekkje saman to små bokstavar til ei stavelse.
+
+Appen er laga med svært lite tekst i sjølve elevvisinga. Eleven dreg den første bokstaven bort til den andre bokstaven, og får ei enkel stjernebelønning når stavinga er fullført.
 
 ## Opne appen
 
 Opne `index.html` i nettlesaren.
 
-Om du vil køyre via enkel lokal server, kan du til dømes bruke:
+Om du vil køyre via ein enkel lokal server, kan du til dømes bruke:
 
 ```bash
 python3 -m http.server
@@ -14,21 +16,44 @@ python3 -m http.server
 
 og så opne adressa som blir vist i terminalen.
 
-## Kva som er bygd inn
+## Kva som er bygd inn no
 
-- dra-og-slepp av første bokstav mot vokalen
-- visuell samansmelting med farge, form og animasjon
-- lydlaus utgåve for rolegare og mindre krevjande øving
-- belønning med stjerner og ein figur som blir "redda"
-- Poio-liknande reisemodus med streak, delmål og små vekegrupper
-- vaksenmodus der du kan leggje inn vekas eigne stavingar direkte i appen
-- betre mobiloppleving med større knappar og tydelegare vertikal draging
-- eige favicon og meir synleg statushjelp undervegs
+- rein elevvising med svært lite tekst
+- tittel `Lyso` og enkel figur i toppen
+- dra-og-slepp av første bokstav mot andre bokstav
+- berre små bokstavar i appen
+- lydlaus utgåve utan lydstøtte
+- stjerner rundt mottakarboksen når stavinga er fullført
+- automatisk overgang til neste oppgåve etter kort pause
+- støtte for touch-skjermar med glattare dragging på iPad og iPhone
+- sperre mot tekstmarkering i draområdet på touch-skjermar
+- vaksenmodus der du kan leggje inn eigne stavingar
 
-## Vekas stavingar
+## Vaksenmodus
 
-Opne "Vaksenmodus" i appen og skriv éi stavelse per linje.
+Opne `Vaksenmodus` i appen og skriv éi stavelse per linje.
 
-- døme: `MA`, `SO`, `LI`, `NO`
+- døme: `ma`, `so`, `li`, `no`
+- appen brukar berre dei to første bokstavane i kvar linje
+- bokstavane blir gjorde om til små bokstavar
 - innhaldet blir lagra lokalt i nettlesaren på denne eininga
-- trykk "Tilbakestill standard" for å gå tilbake til startpakka
+- trykk `Tilbakestill standard` for å gå tilbake til startpakka
+
+## Standardstavingar
+
+Standardpakken i appen er:
+
+- `so`
+- `ma`
+- `le`
+- `ni`
+- `ro`
+
+## Teknisk
+
+Prosjektet er ein liten statisk nettapp utan byggjesteg.
+
+- [index.html](/Users/thomaskopperstad/Documents/Stavelser/index.html)
+- [styles.css](/Users/thomaskopperstad/Documents/Stavelser/styles.css)
+- [app.js](/Users/thomaskopperstad/Documents/Stavelser/app.js)
+- [favicon.svg](/Users/thomaskopperstad/Documents/Stavelser/favicon.svg)
