@@ -161,13 +161,13 @@ function startReadingPause() {
   window.clearTimeout(state.nextTimer);
   state.nextTimer = null;
   state.readyForNext = false;
-  $("nextWordButton").hidden = false;
+  $("nextWordButton").hidden = true;
   $("nextWordButton").disabled = true;
-  $("nextWordButton").textContent = "Liten lesepause …";
   if (document.hidden) return;
   state.nextTimer = window.setTimeout(() => {
     state.nextTimer = null;
     state.readyForNext = true;
+    $("nextWordButton").hidden = false;
     $("nextWordButton").disabled = false;
     $("nextWordButton").textContent = "Neste ord";
     if (state.automatic && !document.hidden) nextWord();
