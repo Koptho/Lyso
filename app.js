@@ -1,396 +1,342 @@
 const STORAGE_KEY = "lyso-weekly-syllables";
-const DEFAULT_SYLLABLES = ["so", "ma", "le", "ni", "ro"];
-const AUTO_MERGE_THRESHOLD = 0.999;
-const RELEASE_MERGE_THRESHOLD = 0.999;
-
+const SETTINGS_KEY = "lyso-reading-settings";
+const DEFAULT_WORDS = ["so", "ma", "le", "ni", "ro"];
+const STATION_PAUSE_MS = 550;
+const $ = (id) => document.getElementById(id);
+const track = $("track");
+const trackViewport = $("trackViewport");
+const draggableLetter = $("draggableLetter");
 const state = {
-  levels: [],
-  levelIndex: 0,
-  progress: 0,
-  pendingProgress: 0,
-  framePending: false,
-  isDragging: false,
-  hasMerged: false,
-  pointerStartCoord: 0,
-  progressStart: 0,
-  maxDrag: 0,
-  mobileLayout: false,
-  completed: new Set(),
-  nextLevelTimeout: null
+  words: [], index: 0, station: 0, progress: 0, completed: new Set(),
+  pointerId: null, pointerOrigin: 0, progressOrigin: 0,
+  tileSize: 112, step: 168, inset: 18, frame: null, pendingProgress: 0,
+  stationTimer: null, nextTimer: null, locked: false, finished: false,
+  readyForNext: false, pauseSeconds: 6, automatic: true
 };
 
-const draggableLetter = document.getElementById("draggableLetter");
-const vowelLetter = document.getElementById("vowelLetter");
-const consonantChar = document.getElementById("consonantChar");
-const vowelChar = document.getElementById("vowelChar");
-const receiverStars = document.getElementById("receiverStars");
-const successText = document.getElementById("successText");
-const successCard = document.getElementById("successCard");
-const buddy = document.getElementById("buddy");
-const buddyStatus = document.getElementById("buddyStatus");
-const choicesList = document.getElementById("choicesList");
-const helperBanner = document.getElementById("helperBanner");
-const audioNote = document.getElementById("audioNote");
-const syllableInput = document.getElementById("syllableInput");
-const saveConfigButton = document.getElementById("saveConfigButton");
-const resetConfigButton = document.getElementById("resetConfigButton");
-const configStatus = document.getElementById("configStatus");
-
-function currentLevel() {
-  return state.levels[state.levelIndex];
-}
-
-function parseSyllables(rawText) {
-  const lines = rawText
-    .split(/\r?\n/)
-    .map((line) => line.trim().toLowerCase())
-    .filter(Boolean);
-
-  const cleaned = [];
-  const seen = new Set();
-
-  lines.forEach((line) => {
-    const lettersOnly = line.replace(/[^a-zæøå]/g, "");
-    if (lettersOnly.length < 2) {
-      return;
-    }
-
-    const syllable = lettersOnly.slice(0, 2);
-    if (!seen.has(syllable)) {
-      seen.add(syllable);
-      cleaned.push(syllable);
+function parseWords(raw) {
+  const words = [], invalid = [], seen = new Set();
+  raw.normalize("NFC").split(/\r?\n/).forEach((entry, index) => {
+    const word = entry.trim().toLowerCase();
+    if (!word) return;
+    if (!/^[a-zæøåéèêëáàâäíìîïóòôöúùûüýÿ]{2,}$/.test(word)) {
+      invalid.push(index + 1);
+    } else if (!seen.has(word)) {
+      seen.add(word);
+      words.push(word);
     }
   });
-
-  return cleaned;
+  return { words, invalid };
 }
 
-function buildLevels(syllables) {
-  return syllables.map((label, index) => ({
-    id: label.toLowerCase(),
-    label,
-    consonant: label[0],
-    vowel: label[1],
-    stage: Math.floor(index / 2) + 1
-  }));
+function currentWord() { return state.words[state.index]; }
+function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+
+function cancelFrame() {
+  if (state.frame !== null) window.cancelAnimationFrame(state.frame);
+  state.frame = null;
 }
 
-function refreshLayoutMetrics() {
-  state.mobileLayout = window.matchMedia("(max-width: 620px)").matches;
-  if (state.mobileLayout) {
-    const vowelTop = vowelLetter.offsetTop;
-    const consonantTop = draggableLetter.offsetTop;
-    state.maxDrag = Math.max(0, vowelTop - consonantTop);
-    return;
+function releasePointer() {
+  const pointerId = state.pointerId;
+  state.pointerId = null;
+  draggableLetter.classList.remove("dragging");
+  if (pointerId !== null && draggableLetter.hasPointerCapture(pointerId)) {
+    draggableLetter.releasePointerCapture(pointerId);
   }
-  state.maxDrag = Math.max(0, vowelLetter.offsetLeft - draggableLetter.offsetLeft);
 }
 
-function loadStoredSyllables() {
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (!saved) {
-    return { syllables: DEFAULT_SYLLABLES, custom: false };
-  }
-
-  const parsed = parseSyllables(saved);
-  return parsed.length
-    ? { syllables: parsed, custom: true }
-    : { syllables: DEFAULT_SYLLABLES, custom: false };
+function clearPendingWork() {
+  cancelFrame();
+  releasePointer();
+  window.clearTimeout(state.stationTimer);
+  window.clearTimeout(state.nextTimer);
+  state.stationTimer = state.nextTimer = null;
 }
 
-function updateChoiceList() {
-  choicesList.innerHTML = "";
-
-  state.levels.forEach((level, index) => {
+function renderChoices() {
+  $("choicesList").replaceChildren();
+  state.words.forEach((word, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "choice-pill";
-    button.textContent = level.label;
-
-    if (index === state.levelIndex) {
-      button.classList.add("active");
-    }
-    if (state.completed.has(level.id)) {
-      button.classList.add("done");
-    }
-
-    button.addEventListener("click", () => {
-      state.levelIndex = index;
-      loadLevel();
-    });
-
-    choicesList.appendChild(button);
+    button.textContent = word;
+    button.classList.toggle("active", index === state.index);
+    button.classList.toggle("done", state.completed.has(word));
+    button.setAttribute("aria-pressed", String(index === state.index));
+    button.addEventListener("click", () => loadWord(index));
+    $("choicesList").appendChild(button);
   });
 }
 
-function refreshScoreboard() {
-  updateChoiceList();
-}
-
-function spawnStarBurst() {
-  const positions = [
-    { x: 0, y: -78 },
-    { x: 55, y: -55 },
-    { x: 78, y: 0 },
-    { x: 55, y: 55 },
-    { x: 0, y: 78 },
-    { x: -55, y: 55 },
-    { x: -78, y: 0 },
-    { x: -55, y: -55 }
-  ];
-
-  positions.forEach((position, index) => {
-    const star = document.createElement("span");
-    star.className = "star-burst";
-    star.style.left = "calc(50% - 13px)";
-    star.style.top = "calc(50% - 13px)";
-    star.style.setProperty("--tx", `${position.x}px`);
-    star.style.setProperty("--ty", `${position.y}px`);
-    star.style.animationDelay = `${index * 35}ms`;
-    receiverStars.appendChild(star);
-    window.setTimeout(() => star.remove(), 1200);
+function updateMetrics() {
+  // Use the same reading direction on every device.
+  const width = trackViewport.clientWidth;
+  state.tileSize = width < 450 ? 88 : 112;
+  state.step = clamp((width - 36 - state.tileSize) / (currentWord().length - 1), state.tileSize + 52, 210);
+  track.style.setProperty("--tile-size", `${state.tileSize}px`);
+  track.style.width = `${Math.max(width, state.inset * 2 + state.tileSize + state.step * (currentWord().length - 1))}px`;
+  $("stations").querySelectorAll(".station").forEach((station, index) => {
+    station.style.left = `${state.inset + index * state.step}px`;
   });
+  $("glowLine").style.left = `${state.inset + state.tileSize / 2}px`;
+  $("glowLine").style.width = `${state.step * (currentWord().length - 1)}px`;
+  renderPosition();
 }
 
-function cancelPendingAdvance() {
-  if (state.nextLevelTimeout) {
-    window.clearTimeout(state.nextLevelTimeout);
-    state.nextLevelTimeout = null;
+function revealCurrentPair() {
+  const activeLeft = state.inset + state.station * state.step;
+  const pairRight = activeLeft + state.tileSize + (state.finished ? 0 : state.step);
+  const viewLeft = trackViewport.scrollLeft;
+  const viewRight = viewLeft + trackViewport.clientWidth;
+  if (activeLeft < viewLeft + 12 || pairRight > viewRight - 12) {
+    trackViewport.scrollLeft = Math.max(0, activeLeft - state.inset);
   }
 }
 
-function resetBoardVisuals() {
-  state.progress = 0;
-  state.pendingProgress = 0;
-  state.hasMerged = false;
-  state.isDragging = false;
-  state.progressStart = 0;
-  draggableLetter.style.transform = "translate3d(0px, -50%, 0)";
-  draggableLetter.style.removeProperty("--merge-x");
-  draggableLetter.style.visibility = "visible";
-  draggableLetter.setAttribute("aria-valuenow", "0");
-  draggableLetter.classList.remove("fusing", "dragging", "merged");
-  vowelLetter.classList.remove("fusing");
-  successCard.style.background = "linear-gradient(180deg, #fef9d9, #ffffff)";
+function renderPosition() {
+  const position = state.inset + (state.station + state.progress) * state.step;
+  draggableLetter.style.transform = `translate3d(${position}px, -50%, 0)`;
+  draggableLetter.setAttribute("aria-valuenow", String(Math.round(state.progress * 100)));
+  draggableLetter.classList.toggle("near-target", state.progress > 0.65);
 }
 
-function loadLevel() {
-  const level = currentLevel();
-  resetBoardVisuals();
-  refreshLayoutMetrics();
-  consonantChar.textContent = level.consonant;
-  vowelChar.textContent = level.vowel;
-  successText.textContent = `Dra ${level.consonant} roleg mot ${level.vowel} og bygg ${level.label}.`;
-  helperBanner.textContent = `Trykk på ${level.consonant} og dra roleg mot ${level.vowel}.`;
-  buddyStatus.textContent = "Lyso ventar på hjelp.";
-  refreshScoreboard();
+function renderStation() {
+  const word = currentWord();
+  $("consonantChar").textContent = word[state.station];
+  $("builtWord").textContent = word.slice(0, state.station + 1);
+  $("wordCounter").textContent = `${state.index + 1} / ${state.words.length}`;
+  $("stations").querySelectorAll(".station").forEach((station, index) => {
+    station.classList.toggle("visited", index < state.station);
+    station.classList.toggle("current", index === state.station);
+    station.classList.toggle("next", index === state.station + 1 && !state.finished);
+  });
+  const label = state.finished ? `${word} er ferdig` : `Dra ${word[state.station]} til ${word[state.station + 1]}`;
+  draggableLetter.setAttribute("aria-label", label);
+  draggableLetter.setAttribute("aria-valuetext", `${word.slice(0, state.station + 1)}. ${label}.`);
+  draggableLetter.setAttribute("aria-disabled", String(state.locked || state.finished));
+  draggableLetter.classList.toggle("waiting", state.locked);
+  renderPosition();
 }
 
-function advanceToNextLevel() {
-  state.levelIndex = findNextLevelIndex();
-  loadLevel();
+function loadWord(index = state.index) {
+  clearPendingWork();
+  state.index = index;
+  state.station = state.progress = state.pendingProgress = 0;
+  state.finished = state.locked = state.readyForNext = false;
+  $("reward").hidden = true;
+  $("nextWordButton").hidden = true;
+  $("buddy").classList.remove("saved");
+  $("helperBanner").textContent = "Hald lyden. Dra til neste bokstav.";
+  $("stations").replaceChildren();
+  [...currentWord()].forEach((letter) => {
+    const station = document.createElement("div");
+    station.className = "letter-tile station";
+    station.setAttribute("aria-hidden", "true");
+    const character = document.createElement("span");
+    character.className = "letter-char";
+    character.textContent = letter;
+    station.appendChild(character);
+    $("stations").appendChild(station);
+  });
+  trackViewport.scrollLeft = 0;
+  updateMetrics();
+  renderStation();
+  renderChoices();
 }
 
-function applyDragPosition(progress) {
-  if (state.mobileLayout) {
-    const y = progress * state.maxDrag;
-    draggableLetter.style.transform = `translate3d(0px, calc(-50% + ${y}px), 0)`;
-  } else {
-    const x = progress * state.maxDrag;
-    draggableLetter.style.transform = `translate3d(${x}px, -50%, 0)`;
-    draggableLetter.style.setProperty("--merge-x", `${x}px`);
-  }
-
-  draggableLetter.setAttribute("aria-valuenow", String(Math.round(progress * 100)));
-  draggableLetter.classList.toggle("merged", progress >= AUTO_MERGE_THRESHOLD);
-  draggableLetter.classList.toggle("fusing", progress > 0.55);
-  vowelLetter.classList.toggle("fusing", progress > 0.7);
+function finishWord() {
+  if (state.finished) return;
+  state.finished = true;
+  state.locked = false;
+  state.completed.add(currentWord());
+  $("reward").hidden = false;
+  $("buddy").classList.add("saved");
+  $("helperBanner").textContent = "Flott! Les heile ordet. Ta ein liten pause.";
+  $("buddyStatus").textContent = `${currentWord()}. Flott jobba! Du fekk ei stjerne.`;
+  renderStation();
+  renderChoices();
+  startReadingPause();
 }
 
-function clamp(number, min, max) {
-  return Math.min(max, Math.max(min, number));
+function startReadingPause() {
+  window.clearTimeout(state.nextTimer);
+  state.nextTimer = null;
+  state.readyForNext = false;
+  $("nextWordButton").hidden = false;
+  $("nextWordButton").disabled = true;
+  $("nextWordButton").textContent = "Liten lesepause …";
+  if (document.hidden) return;
+  state.nextTimer = window.setTimeout(() => {
+    state.nextTimer = null;
+    state.readyForNext = true;
+    $("nextWordButton").disabled = false;
+    $("nextWordButton").textContent = "Neste ord";
+    if (state.automatic && !document.hidden) nextWord();
+  }, state.pauseSeconds * 1000);
 }
 
-function findNextLevelIndex() {
-  for (let index = 0; index < state.levels.length; index += 1) {
-    if (!state.completed.has(state.levels[index].id)) {
-      return index;
-    }
-  }
-  return (state.levelIndex + 1) % state.levels.length;
-}
-
-function completeMerge() {
-  if (state.hasMerged) {
+function reachStation() {
+  cancelFrame();
+  releasePointer();
+  state.station += 1;
+  state.progress = state.pendingProgress = 0;
+  if (state.station === currentWord().length - 1) {
+    finishWord();
     return;
   }
-
-  const level = currentLevel();
-  state.progress = 1;
-  state.hasMerged = true;
-  state.isDragging = false;
-  applyDragPosition(1);
-  state.completed.add(level.id);
-
-  vowelChar.textContent = level.vowel;
-  successCard.style.background = "linear-gradient(180deg, #d7ffd9, #fff8d4)";
-  successText.textContent = `${level.label}! Flott jobba. Du fekk 3 stjerner.`;
-  helperBanner.textContent = `Hurra! Sjå på ${level.vowel} og ta deg litt tid før neste oppgåve.`;
-  buddy.classList.remove("saved");
-  void buddy.offsetWidth;
-  buddy.classList.add("saved");
-  buddyStatus.textContent = `${level.label} er redda.`;
-  spawnStarBurst();
-  refreshScoreboard();
-
-  window.setTimeout(() => {
-    draggableLetter.style.visibility = "hidden";
-  }, 180);
-
-  state.nextLevelTimeout = window.setTimeout(() => {
-    vowelChar.textContent = currentLevel().vowel;
-    state.nextLevelTimeout = null;
-    advanceToNextLevel();
-  }, 4000);
+  // One destination per gesture. A fast swipe can never skip a letter.
+  state.locked = true;
+  $("helperBanner").textContent = "Stopp litt. Løft fingeren og dra vidare.";
+  renderStation();
+  state.stationTimer = window.setTimeout(() => {
+    state.stationTimer = null;
+    state.locked = false;
+    revealCurrentPair();
+    renderStation();
+    $("helperBanner").textContent = "Hald lyden. Dra til neste bokstav.";
+  }, STATION_PAUSE_MS);
 }
 
 function setProgress(progress) {
+  if (state.locked || state.finished) return;
   state.progress = clamp(progress, 0, 1);
-  applyDragPosition(state.progress);
-  if (state.progress >= AUTO_MERGE_THRESHOLD) {
-    completeMerge();
-  }
+  // Snap over the final 18px for a forgiving target under small fingers.
+  if (state.progress * state.step >= state.step - 18) reachStation();
+  else renderPosition();
 }
 
-function scheduleProgress(progress) {
-  state.pendingProgress = clamp(progress, 0, 1);
-  if (state.framePending) {
-    return;
-  }
-
-  state.framePending = true;
-  window.requestAnimationFrame(() => {
-    state.framePending = false;
-    if (!state.isDragging && !state.hasMerged) {
-      return;
-    }
-    setProgress(state.pendingProgress);
-  });
-}
-
-function handlePointerMove(event) {
-  if (!state.isDragging || state.hasMerged) {
-    return;
-  }
-
-  if (state.mobileLayout) {
-    const delta = event.clientY - state.pointerStartCoord;
-    scheduleProgress(state.progressStart + delta / Math.max(state.maxDrag, 1));
-    return;
-  }
-
-  const delta = event.clientX - state.pointerStartCoord;
-  scheduleProgress(state.progressStart + delta / Math.max(state.maxDrag, 1));
-}
-
-function handlePointerUp() {
-  if (!state.isDragging) {
-    return;
-  }
-
-  state.isDragging = false;
-  state.progressStart = state.progress;
-  draggableLetter.classList.remove("dragging");
-
-  if (!state.hasMerged && state.progress >= RELEASE_MERGE_THRESHOLD) {
-    completeMerge();
-    return;
-  }
-
-  if (!state.hasMerged) {
-    state.progress = 0;
-    state.pendingProgress = 0;
-    applyDragPosition(0);
-    buddyStatus.textContent = "Prøv ein gong til. Dra roleg heilt fram.";
-    helperBanner.textContent = "Fin øving. La oss prøve ein gong til heilt fram til vokalen.";
-    refreshScoreboard();
-  }
+function pointerProgress(event) {
+  return state.progressOrigin + (event.clientX - state.pointerOrigin) / state.step;
 }
 
 function onPointerDown(event) {
-  state.isDragging = true;
-  state.hasMerged = false;
-  state.progressStart = state.progress;
-  helperBanner.textContent = "Ja, slik. Hald fram roleg mot vokalen.";
-  successText.textContent = "Dra bokstavane heilt saman til dei møtest.";
+  if (state.pointerId !== null || state.locked || state.finished || event.isPrimary === false || event.button !== 0) return;
+  event.preventDefault();
+  cancelFrame();
+  state.pointerId = event.pointerId;
+  state.pointerOrigin = event.clientX;
+  state.progressOrigin = state.progress;
   draggableLetter.classList.add("dragging");
-  refreshLayoutMetrics();
-  state.pointerStartCoord = state.mobileLayout ? event.clientY : event.clientX;
   draggableLetter.setPointerCapture(event.pointerId);
 }
 
-function handleKeyboard(event) {
-  if (!["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
-    return;
-  }
-
+function onPointerMove(event) {
+  if (event.pointerId !== state.pointerId) return;
   event.preventDefault();
-
-  if (event.key === "Enter" || event.key === " ") {
-    loadLevel();
-    return;
-  }
-
-  const direction = event.key === "ArrowLeft" || event.key === "ArrowUp" ? -0.12 : 0.12;
-  setProgress(state.progress + direction);
+  state.pendingProgress = pointerProgress(event);
+  if (state.frame !== null) return;
+  state.frame = window.requestAnimationFrame(() => {
+    state.frame = null;
+    if (state.pointerId !== null) setProgress(state.pendingProgress);
+  });
 }
 
-function applyWeeklySyllables(syllables, sourceLabel) {
-  cancelPendingAdvance();
-  state.levels = buildLevels(syllables);
-  state.levelIndex = 0;
+function onPointerUp(event) {
+  if (event.pointerId !== state.pointerId) return;
+  event.preventDefault();
+  cancelFrame();
+  // Read the release so its last movement cannot be lost between frames.
+  setProgress(pointerProgress(event));
+  releasePointer();
+}
+
+function interruptDrag(event) {
+  if (event && event.pointerId !== undefined && event.pointerId !== state.pointerId) return;
+  cancelFrame();
+  releasePointer();
+  // An interrupted touch is a pause, never a failed attempt.
+}
+
+function onKeyDown(event) {
+  if (!["ArrowRight", "ArrowLeft", "Home", "End", "Enter", " "].includes(event.key)) return;
+  event.preventDefault();
+  if (state.pointerId !== null || state.locked || state.finished) return;
+  if (event.repeat && ["Enter", " ", "End"].includes(event.key)) return;
+  setProgress(event.key === "Home" ? 0 : ["End", "Enter", " "].includes(event.key) ? 1 : state.progress + (event.key === "ArrowLeft" ? -0.1 : 0.1));
+}
+
+function nextWord() {
+  if (state.readyForNext) loadWord((state.index + 1) % state.words.length);
+}
+
+function applyWords(words, message) {
+  state.words = words;
   state.completed = new Set();
-  syllableInput.value = syllables.join("\n");
-  configStatus.textContent = sourceLabel;
-  loadLevel();
+  $("syllableInput").value = words.join("\n");
+  $("configStatus").textContent = message;
+  loadWord(0);
 }
 
-function saveWeeklySyllables() {
-  const parsed = parseSyllables(syllableInput.value);
-  if (!parsed.length) {
-    configStatus.textContent = "Skriv inn minst éi gyldig stavelse med to bokstavar.";
+function saveWords() {
+  const { words, invalid } = parseWords($("syllableInput").value);
+  if (invalid.length || !words.length) {
+    $("configStatus").textContent = invalid.length ? `Sjekk linje ${invalid.join(", ")}. Skriv eitt ord per linje med minst to bokstavar, utan mellomrom eller teikn.` : "Skriv inn minst eitt øveord.";
     return;
   }
-
-  window.localStorage.setItem(STORAGE_KEY, parsed.join("\n"));
-  applyWeeklySyllables(parsed, "Ny vekepakke er lagra for denne eleven på denne eininga.");
+  let message = "Øveorda er lagra på denne eininga.";
+  try { window.localStorage.setItem(STORAGE_KEY, words.join("\n")); }
+  catch { message = "Øveorda er klare. Nettlesaren kunne ikkje lagre dei til neste gong."; }
+  applyWords(words, message);
 }
 
-function resetWeeklySyllables() {
-  window.localStorage.removeItem(STORAGE_KEY);
-  applyWeeklySyllables(DEFAULT_SYLLABLES, "Standardpakka er aktiv.");
+function saveSettings() {
+  state.pauseSeconds = Number($("pauseSelect").value);
+  state.automatic = $("autoAdvance").checked;
+  try { window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ pauseSeconds: state.pauseSeconds, automatic: state.automatic })); }
+  catch { $("configStatus").textContent = "Innstillingane gjeld no, men kunne ikkje lagrast til neste gong."; }
+  if (state.finished) {
+    // Changing pace never triggers an old timer.
+    startReadingPause();
+  }
 }
 
 draggableLetter.addEventListener("pointerdown", onPointerDown);
-draggableLetter.addEventListener("pointerup", handlePointerUp);
-draggableLetter.addEventListener("pointercancel", handlePointerUp);
-draggableLetter.addEventListener("keydown", handleKeyboard);
-
-saveConfigButton.addEventListener("click", saveWeeklySyllables);
-resetConfigButton.addEventListener("click", resetWeeklySyllables);
-
-window.addEventListener("pointermove", handlePointerMove);
-window.addEventListener("pointerup", handlePointerUp);
+draggableLetter.addEventListener("pointermove", onPointerMove);
+draggableLetter.addEventListener("pointerup", onPointerUp);
+draggableLetter.addEventListener("pointercancel", interruptDrag);
+draggableLetter.addEventListener("lostpointercapture", interruptDrag);
+draggableLetter.addEventListener("keydown", onKeyDown);
+window.addEventListener("blur", () => interruptDrag());
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) interruptDrag();
+  // Time away from the app never counts as the child's reading pause.
+  if (state.finished) startReadingPause();
+});
+document.addEventListener("selectstart", (event) => { if (!event.target.closest("textarea, input")) event.preventDefault(); });
+track.addEventListener("contextmenu", (event) => event.preventDefault());
+track.addEventListener("dragstart", (event) => event.preventDefault());
+$("saveConfigButton").addEventListener("click", saveWords);
+$("resetConfigButton").addEventListener("click", () => {
+  let message = "Standardpakka er aktiv.";
+  try { window.localStorage.removeItem(STORAGE_KEY); }
+  catch { message = "Standardpakka er aktiv no. Nettlesaren kunne ikkje lagre endringa."; }
+  applyWords(DEFAULT_WORDS, message);
+});
+$("pauseSelect").addEventListener("change", saveSettings);
+$("autoAdvance").addEventListener("change", saveSettings);
+$("nextWordButton").addEventListener("click", nextWord);
 window.addEventListener("resize", () => {
-  refreshLayoutMetrics();
-  applyDragPosition(state.progress);
+  interruptDrag();
+  updateMetrics();
+  revealCurrentPair();
 });
 
-audioNote.textContent = "Denne versjonen er laga utan lydstøtte.";
-const initialConfig = loadStoredSyllables();
-applyWeeklySyllables(
-  initialConfig.syllables,
-  initialConfig.custom
-    ? "Eiga vekepakke er lasta inn frå denne eininga."
-    : "Standardpakka er aktiv."
-);
+let initialWords = DEFAULT_WORDS;
+let initialMessage = "Standardpakka er aktiv. Legg inn vekas øveord under.";
+try {
+  const saved = window.localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    const { words, invalid } = parseWords(saved);
+    if (words.length && !invalid.length) {
+      initialWords = words;
+      initialMessage = "Øveorda dine er lasta inn frå denne eininga.";
+    }
+  }
+  const settings = JSON.parse(window.localStorage.getItem(SETTINGS_KEY) || "null");
+  if (settings && [6, 8, 10, 15].includes(settings.pauseSeconds)) state.pauseSeconds = settings.pauseSeconds;
+  if (settings && typeof settings.automatic === "boolean") state.automatic = settings.automatic;
+} catch { initialMessage = "Du kan øve som vanleg. Lagring er ikkje tilgjengeleg i denne nettlesaren."; }
+$("pauseSelect").value = String(state.pauseSeconds);
+$("autoAdvance").checked = state.automatic;
+applyWords(initialWords, initialMessage);
