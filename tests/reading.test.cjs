@@ -251,7 +251,6 @@ test('large movement during a pause reaches only one new station and preserves i
   app.pointer('pointermove', 2000); app.tick(550);
   assert.equal(app.read('state.station'), 2);
   assert.equal(app.read('state.locked'), true);
-  assert.match(app.elements.helperBanner.textContent, /Stopp litt/);
   app.tick(2000);
   assert.equal(app.read('state.station'), 2);
   assert.equal(app.read('state.progress'), 0);

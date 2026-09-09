@@ -7,7 +7,7 @@
     <meta name="description" content="Øv på leseorda bokstav for bokstav, med roleg dragging og tid til ein pause." />
     <meta name="theme-color" content="#ffd85f" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=20260909b" />
+    <link rel="stylesheet" href="./styles.css?v=20260909c" />
   </head>
   <body>
     <main class="app-shell">
@@ -24,7 +24,10 @@
         </div>
       </header>
       <section class="play-card" aria-label="Les og dra bokstavane saman">
-        <p class="helper-banner" id="helperBanner" aria-live="polite">Hald lyden. Dra til neste bokstav.</p>
+        <div class="reading-result">
+          <span class="built-word" id="builtWord" aria-label="Bokstavane du har lese"></span>
+          <span class="reward-star" id="reward" hidden aria-label="Ei stjerne">★</span>
+        </div>
         <div class="track-wrap" id="trackViewport">
           <div class="track" id="track">
             <div class="glow-line" id="glowLine" aria-hidden="true"></div>
@@ -35,10 +38,6 @@
               <span class="letter-char" id="consonantChar"></span>
             </div>
           </div>
-        </div>
-        <div class="reading-result">
-          <span class="built-word" id="builtWord" aria-label="Bokstavane du har lese"></span>
-          <span class="reward-star" id="reward" hidden aria-label="Ei stjerne">★</span>
         </div>
         <div class="next-word-wrap">
           <button class="sound-button" id="nextWordButton" type="button" hidden>Neste ord</button>
@@ -67,6 +66,6 @@
         </details>
       </section>
     </main>
-    <script src="./app.js?v=20260909b"></script>
+    <script src="./app.js?v=20260909c"></script>
   </body>
 </html>

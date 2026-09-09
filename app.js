@@ -127,7 +127,6 @@ function loadWord(index = state.index) {
   $("reward").hidden = true;
   $("nextWordButton").hidden = true;
   $("buddy").classList.remove("saved");
-  $("helperBanner").textContent = "Hald lyden. Dra til neste bokstav.";
   $("stations").replaceChildren();
   [...currentWord()].forEach((letter) => {
     const station = document.createElement("div");
@@ -152,7 +151,6 @@ function finishWord() {
   state.completed.add(currentWord());
   $("reward").hidden = false;
   $("buddy").classList.add("saved");
-  $("helperBanner").textContent = "Flott! Les heile ordet. Ta ein liten pause.";
   $("buddyStatus").textContent = `${currentWord()}. Flott jobba! Du fekk ei stjerne.`;
   renderStation();
   renderChoices();
@@ -190,14 +188,12 @@ function reachStation() {
   }
   // Every letter still gets its own calm stop, even in one continuous drag.
   state.locked = true;
-  $("helperBanner").textContent = "Stopp litt. Hald fingeren nede og dra vidare.";
   renderStation();
   state.stationTimer = window.setTimeout(() => {
     state.stationTimer = null;
     state.locked = false;
     revealCurrentPair();
     renderStation();
-    $("helperBanner").textContent = "Hald lyden. Dra til neste bokstav.";
     if (state.pointerId !== null) applyPointerPosition();
   }, STATION_PAUSE_MS);
 }

@@ -8,7 +8,8 @@ Appen er lydlaus: barnet seier og held bokstavlydane sjølv.
 Dra den oransje bokstaven bort til den neste blå bokstaven.
 I `lese` dreg barnet gjennom `l → e → s → e` med same berøring.
 Ved kvar mellomstasjon er det ein kort stopp. Hald fingeren nede og dra vidare.
-Bokstavane som er lesne, blir også viste samla under sporet: `le`, `les`, `lese`.
+Bokstavane som er lesne, blir viste samla over sporet: `l`, `le`, `les`, `lese`.
+Her står berre ordet som veks, utan forklaringstekst. Stjerna kjem ved sida av det ferdige ordet.
 
 - Kvar bokstav får sin eigen stopp, også når barnet dreg gjennom heile ordet utan å løfte fingeren.
 - Løftar barnet fingeren undervegs, blir bokstaven ståande der. Ta tak igjen og hald fram.
