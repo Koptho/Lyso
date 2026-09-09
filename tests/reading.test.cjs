@@ -212,3 +212,103 @@ test('keyboard access respects intermediate stops and never exceeds the word', (
   key(); app.tick(550); key(); key();
   assert.equal(app.read('state.station'), 3); assert.equal(app.read('state.finished'), true);
 });
+
+test('one held touch completes lese with capture, snap, colours and final reward intact', () => {
+  const app = setup(); app.words('lese');
+  const step = app.read('state.step');
+  app.pointer('pointerdown', 74);
+  for (let station = 1; station <= 3; station++) {
+    app.pointer('pointermove', 74 + station * step); app.tick(16);
+    assert.equal(app.read('state.station'), station);
+    assert.equal(app.elements.reward.hidden, station < 3);
+    assert.equal(app.elements.stations.children[station - 1].classes.has('visited'), true);
+    if (station < 3) {
+      assert.equal(app.elements.draggableLetter.hasPointerCapture(1), true);
+      assert.equal(app.elements.stations.children[station + 1].classes.has('next'), true);
+      app.tick(550);
+      assert.equal(app.read('state.station'), station);
+      assert.equal(app.read('state.progress'), 0);
+    }
+  }
+  assert.equal(app.read('state.finished'), true);
+  assert.equal(app.elements.draggableLetter.hasPointerCapture(1), false);
+  assert.equal(app.read('state.pointerId'), null);
+});
+
+test('movement during a station pause continues without another pointer event', () => {
+  const app = setup(); app.words('lese'); const step = app.read('state.step');
+  app.pointer('pointerdown', 50); app.pointer('pointermove', 50 + step); app.tick(16);
+  app.pointer('pointermove', 50 + step * 1.5); app.tick(549);
+  assert.equal(app.read('state.progress'), 0);
+  app.tick(1);
+  assert.ok(Math.abs(app.read('state.progress') - .5) < .001);
+  assert.equal(app.read('state.pointerId'), 1);
+});
+
+test('large movement during a pause reaches only one new station and preserves its pause', () => {
+  const app = setup(); app.words('lese'); const step = app.read('state.step');
+  app.pointer('pointerdown', 50); app.pointer('pointermove', 50 + step); app.tick(16);
+  app.pointer('pointermove', 2000); app.tick(550);
+  assert.equal(app.read('state.station'), 2);
+  assert.equal(app.read('state.locked'), true);
+  assert.match(app.elements.helperBanner.textContent, /Stopp litt/);
+  app.tick(2000);
+  assert.equal(app.read('state.station'), 2);
+  assert.equal(app.read('state.progress'), 0);
+  assert.equal(app.elements.reward.hidden, true);
+});
+
+for (const end of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+  test(`${end} during a held pause prevents delayed advancement`, () => {
+    const app = setup(); app.words('lese'); const step = app.read('state.step');
+    app.pointer('pointerdown', 50); app.pointer('pointermove', 50 + step); app.tick(16);
+    app.pointer('pointermove', 50 + step * 2);
+    app.pointer(end, 50 + step * 2);
+    app.tick(1000);
+    assert.equal(app.read('state.station'), 1);
+    assert.equal(app.read('state.progress'), 0);
+    assert.equal(app.read('state.pointerId'), null);
+    app.drag(); assert.equal(app.read('state.station'), 2);
+  });
+}
+
+test('latest movement during a pause wins; moving left allows immediate forward response', () => {
+  const app = setup(); app.words('lese'); const step = app.read('state.step');
+  app.pointer('pointerdown', 50); app.pointer('pointermove', 50 + step); app.tick(16);
+  app.pointer('pointermove', 50 + step * 2);
+  app.pointer('pointermove', 40); app.tick(550);
+  assert.equal(app.read('state.station'), 1);
+  assert.equal(app.read('state.progress'), 0);
+  app.pointer('pointermove', 40 + step * .25); app.tick(16);
+  assert.ok(Math.abs(app.read('state.progress') - .25) < .001);
+});
+
+test('long word can complete with one held touch staying inside a narrow screen', () => {
+  const app = setup({ width: 280 }); app.words('sommarferie');
+  const step = app.read('state.step');
+  app.pointer('pointerdown', 60);
+  for (let station = 1; station < 11; station++) {
+    app.pointer('pointermove', 60 + step); app.tick(16);
+    assert.equal(app.read('state.station'), station);
+    if (station < 10) {
+      app.pointer('pointermove', 60); app.tick(550);
+      assert.equal(app.read('state.pointerId'), 1);
+      assert.equal(app.read('state.progress'), 0);
+      assert.equal(app.read('state.station'), station);
+    }
+  }
+  assert.ok(app.elements.trackViewport.scrollLeft > 0);
+  assert.equal(app.read('state.finished'), true);
+});
+
+test('word change during a held pause cancels capture and any recorded movement', () => {
+  const app = setup(); app.words('lese\nskule');
+  app.pointer('pointerdown', 50); app.pointer('pointermove', 50 + app.read('state.step')); app.tick(16);
+  app.pointer('pointermove', 1000);
+  app.elements.choicesList.children[1].dispatch('click');
+  assert.equal(app.elements.draggableLetter.hasPointerCapture(1), false);
+  app.tick(5000);
+  assert.equal(app.read('currentWord()'), 'skule');
+  assert.equal(app.read('state.station'), 0);
+  assert.equal(app.read('state.progress'), 0);
+});

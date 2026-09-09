@@ -8,7 +8,7 @@ const trackViewport = $("trackViewport");
 const draggableLetter = $("draggableLetter");
 const state = {
   words: [], index: 0, station: 0, progress: 0, completed: new Set(),
-  pointerId: null, pointerOrigin: 0, progressOrigin: 0,
+  pointerId: null, pointerOrigin: 0, pointerLastX: 0, progressOrigin: 0,
   tileSize: 112, step: 168, inset: 18, frame: null, pendingProgress: 0,
   stationTimer: null, nextTimer: null, locked: false, finished: false,
   readyForNext: false, pauseSeconds: 6, automatic: true
@@ -178,16 +178,19 @@ function startReadingPause() {
 
 function reachStation() {
   cancelFrame();
-  releasePointer();
   state.station += 1;
   state.progress = state.pendingProgress = 0;
+  // Keep the same touch, but discard overshoot at each new letter.
+  state.pointerOrigin = state.pointerLastX;
+  state.progressOrigin = 0;
   if (state.station === currentWord().length - 1) {
+    releasePointer();
     finishWord();
     return;
   }
-  // One destination per gesture. A fast swipe can never skip a letter.
+  // Every letter still gets its own calm stop, even in one continuous drag.
   state.locked = true;
-  $("helperBanner").textContent = "Stopp litt. Løft fingeren og dra vidare.";
+  $("helperBanner").textContent = "Stopp litt. Hald fingeren nede og dra vidare.";
   renderStation();
   state.stationTimer = window.setTimeout(() => {
     state.stationTimer = null;
@@ -195,6 +198,7 @@ function reachStation() {
     revealCurrentPair();
     renderStation();
     $("helperBanner").textContent = "Hald lyden. Dra til neste bokstav.";
+    if (state.pointerId !== null) applyPointerPosition();
   }, STATION_PAUSE_MS);
 }
 
@@ -206,8 +210,16 @@ function setProgress(progress) {
   else renderPosition();
 }
 
-function pointerProgress(event) {
-  return state.progressOrigin + (event.clientX - state.pointerOrigin) / state.step;
+function applyPointerPosition() {
+  if (state.locked || state.finished) return;
+  const progress = state.progressOrigin + (state.pointerLastX - state.pointerOrigin) / state.step;
+  if (progress < 0) {
+    // On a long word the finger can move back left, still held, then drag on.
+    // Rebase here so moving right responds immediately, without a dead zone.
+    state.pointerOrigin = state.pointerLastX;
+    state.progressOrigin = 0;
+  }
+  setProgress(progress);
 }
 
 function onPointerDown(event) {
@@ -216,6 +228,7 @@ function onPointerDown(event) {
   cancelFrame();
   state.pointerId = event.pointerId;
   state.pointerOrigin = event.clientX;
+  state.pointerLastX = event.clientX;
   state.progressOrigin = state.progress;
   draggableLetter.classList.add("dragging");
   draggableLetter.setPointerCapture(event.pointerId);
@@ -224,11 +237,13 @@ function onPointerDown(event) {
 function onPointerMove(event) {
   if (event.pointerId !== state.pointerId) return;
   event.preventDefault();
-  state.pendingProgress = pointerProgress(event);
+  state.pointerLastX = event.clientX;
+  // Keep the most recent position during the stop; replay it only if held.
+  if (state.locked) return;
   if (state.frame !== null) return;
   state.frame = window.requestAnimationFrame(() => {
     state.frame = null;
-    if (state.pointerId !== null) setProgress(state.pendingProgress);
+    if (state.pointerId !== null) applyPointerPosition();
   });
 }
 
@@ -237,7 +252,8 @@ function onPointerUp(event) {
   event.preventDefault();
   cancelFrame();
   // Read the release so its last movement cannot be lost between frames.
-  setProgress(pointerProgress(event));
+  state.pointerLastX = event.clientX;
+  applyPointerPosition();
   releasePointer();
 }
 

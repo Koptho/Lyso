@@ -6,14 +6,14 @@ Appen er lydlaus: barnet seier og held bokstavlydane sjølv.
 ## Slik øver de
 
 Dra den oransje bokstaven bort til den neste blå bokstaven.
-I `lese` blir det tre drag: `l → e`, `e → s`, `s → e`.
-Ved kvar mellomstasjon er det ein kort stopp. Løft fingeren og dra vidare.
+I `lese` dreg barnet gjennom `l → e → s → e` med same berøring.
+Ved kvar mellomstasjon er det ein kort stopp. Hald fingeren nede og dra vidare.
 Bokstavane som er lesne, blir også viste samla under sporet: `le`, `les`, `lese`.
 
-- Kvar drarørsle går høgst til neste bokstav, slik at ingen bokstav blir hoppa over.
+- Kvar bokstav får sin eigen stopp, også når barnet dreg gjennom heile ordet utan å løfte fingeren.
 - Løftar barnet fingeren undervegs, blir bokstaven ståande der. Ta tak igjen og hald fram.
 - Dra frå venstre mot høgre på både iPad, mobil og datamaskin.
-- Lange ord beheld store bokstavar. Sporet flyttar seg automatisk vidare mellom draga.
+- Lange ord beheld store bokstavar. Sporet flyttar seg automatisk vidare ved mellomstasjonane. Fingeren kan flyttast tilbake mot venstre, framleis nede, før barnet dreg vidare mot høgre.
 - Ei lita stjerne kjem når siste bokstav er nådd. Heile ordet blir ståande gjennom pausen.
 - Ingen tekstmarkering eller langtrykkmeny i leseområdet. Vaksne kan framleis redigere og lime inn øveord.
 - Tastatur: pil venstre/høgre flyttar bokstaven. Enter, mellomrom eller End går til neste stasjon. Home går tilbake til starten av det pågåande draget.
