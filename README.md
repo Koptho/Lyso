@@ -18,7 +18,7 @@ Bokstavane som er lesne, blir også viste samla under sporet: `le`, `les`, `lese
 - Ingen tekstmarkering eller langtrykkmeny i leseområdet. Vaksne kan framleis redigere og lime inn øveord.
 - Tastatur: pil venstre/høgre flyttar bokstaven. Enter, mellomrom eller End går til neste stasjon. Home går tilbake til starten av det pågåande draget.
 
-## Vaksenmodus
+## Øveord
 
 Skriv eitt øveord per linje og vel **Lagre vekas øveord**. Heile ordet blir teke med.
 Ord må ha minst to bokstavar, utan mellomrom, tal eller skiljeteikn.
