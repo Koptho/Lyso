@@ -3,99 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lyso</title>
-    <meta
-      name="description"
-      content="Ei barnevenleg øvingsapp for å trekkje saman bokstavar til stavingar."
-    />
+    <title>Lyso – øv på leseorda</title>
+    <meta name="description" content="Øv på leseorda bokstav for bokstav, med roleg dragging og tid til ein pause." />
     <meta name="theme-color" content="#ffd85f" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css?v=20260414b" />
+    <link rel="stylesheet" href="./styles.css?v=20260909c" />
   </head>
   <body>
     <main class="app-shell">
-      <section class="hero-card">
-        <div class="reward-panel" aria-live="polite">
+      <header class="hero-card">
+        <div class="reward-panel">
           <h1 class="hero-title">Lyso</h1>
-
-          <div class="buddy-wrap">
-            <div class="buddy" id="buddy" aria-hidden="true">
-              <div class="buddy-eye buddy-eye-left"></div>
-              <div class="buddy-eye buddy-eye-right"></div>
-              <div class="buddy-mouth"></div>
-            </div>
-            <p class="buddy-status sr-only" id="buddyStatus">Lyso ventar på hjelp.</p>
+          <div class="buddy" id="buddy" aria-hidden="true">
+            <div class="buddy-eye buddy-eye-left"></div>
+            <div class="buddy-eye buddy-eye-right"></div>
+            <div class="buddy-mouth"></div>
           </div>
+          <span class="word-counter" id="wordCounter" aria-label="Ord i øvinga"></span>
+          <p class="sr-only" id="buddyStatus" aria-live="polite"></p>
         </div>
-      </section>
-
-      <section class="play-card">
-        <div class="track-wrap">
-          <p class="helper-banner sr-only" id="helperBanner" aria-live="polite">
-            Trykk på den varme bokstaven og dra henne roleg mot vokalen.
-          </p>
-          <div class="track" id="track" aria-label="Dra bokstaven mot vokalen">
-            <div class="glow-line" aria-hidden="true"></div>
-            <div
-              class="letter-tile consonant-tile"
-              id="draggableLetter"
-              role="slider"
-              aria-valuemin="0"
-              aria-valuemax="100"
-              aria-valuenow="0"
-              aria-label="Dra første bokstav mot vokalen"
-              tabindex="0"
-            >
-              <span class="letter-char" id="consonantChar">s</span>
-            </div>
-
-            <div class="letter-tile vowel-tile" id="vowelLetter">
-              <div class="receiver-stars" id="receiverStars" aria-hidden="true"></div>
-              <span class="letter-char" id="vowelChar">o</span>
+      </header>
+      <section class="play-card" aria-label="Les og dra bokstavane saman">
+        <div class="reading-result">
+          <span class="built-word" id="builtWord" aria-label="Bokstavane du har lese"></span>
+          <span class="reward-star" id="reward" hidden aria-label="Ei stjerne">★</span>
+        </div>
+        <div class="track-wrap" id="trackViewport">
+          <div class="track" id="track">
+            <div class="glow-line" id="glowLine" aria-hidden="true"></div>
+            <div id="stations"></div>
+            <div class="letter-tile consonant-tile" id="draggableLetter" role="slider"
+              aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-orientation="horizontal"
+              aria-label="Dra til neste bokstav" tabindex="0" draggable="false">
+              <span class="letter-char" id="consonantChar"></span>
             </div>
           </div>
         </div>
-
-        <div class="success-card sr-only" id="successCard" aria-live="polite">
-          <p class="success-title">Prøv å byggje stavinga</p>
-          <p class="success-text" id="successText">
-            Dra bokstaven sakte mot vokalen og sjå korleis ho blir til ei stavelse.
-          </p>
-          <p class="audio-note" id="audioNote">Denne versjonen er laga utan lydstøtte.</p>
+        <div class="next-word-wrap">
+          <button class="sound-button" id="nextWordButton" type="button" hidden>Neste ord</button>
         </div>
       </section>
-
-      <section class="choices-card" aria-label="Komande stavingar">
+      <section class="choices-card" aria-label="Øveord">
         <div class="choices-list" id="choicesList"></div>
         <details class="config-panel">
-          <summary>Vaksenmodus</summary>
-          <label class="config-label" for="syllableInput">
-            Skriv éi stavelse per linje. To bokstavar fungerer best, til dømes `ma`, `so`, `li`.
-          </label>
-          <textarea
-            id="syllableInput"
-            class="config-input"
-            rows="8"
-            spellcheck="false"
-            autocapitalize="none"
-            autocomplete="off"
-            autocorrect="off"
-          >so
-ma
-le
-ni
-ro</textarea>
+          <summary>Øveord</summary>
+          <label class="config-label" for="syllableInput">Skriv eitt øveord per linje, til dømes so, lese, sola eller skule.</label>
+          <textarea id="syllableInput" class="config-input" rows="6" spellcheck="false"
+            autocapitalize="none" autocomplete="off" autocorrect="off"></textarea>
           <div class="config-actions">
-            <button class="sound-button" id="saveConfigButton" type="button">Lagre vekas stavingar</button>
+            <button class="sound-button" id="saveConfigButton" type="button">Lagre vekas øveord</button>
             <button class="sound-button ghost" id="resetConfigButton" type="button">Tilbakestill standard</button>
           </div>
-          <p class="config-status" id="configStatus" aria-live="polite">
-            Standardpakka er aktiv.
-          </p>
+          <div class="pace-settings">
+            <label for="pauseSelect">Pause mellom orda</label>
+            <select id="pauseSelect">
+              <option value="6">6 sekund</option><option value="8">8 sekund</option>
+              <option value="10">10 sekund</option><option value="15">15 sekund</option>
+            </select>
+            <label class="check-label"><input type="checkbox" id="autoAdvance" checked /> Gå automatisk til neste ord etter pausen</label>
+          </div>
+          <p class="config-status" id="configStatus" aria-live="polite"></p>
         </details>
       </section>
     </main>
-
-    <script src="./app.js?v=20260414b"></script>
+    <script src="./app.js?v=20260909d"></script>
   </body>
 </html>

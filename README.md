@@ -1,59 +1,49 @@
 # Lyso
 
-Ein enkel nettapp for å øve på å trekkje saman to små bokstavar til ei stavelse.
+Ein roleg leseapp der barnet øver på heile ord, bokstav for bokstav.
+Appen er lydlaus: barnet seier og held bokstavlydane sjølv.
 
-Appen er laga med svært lite tekst i sjølve elevvisinga. Eleven dreg den første bokstaven bort til den andre bokstaven, og får ei enkel stjernebelønning når stavinga er fullført.
+## Slik øver de
 
-## Opne appen
+Dra den oransje bokstaven bort til den neste blå bokstaven.
+I `lese` dreg barnet gjennom `l → e → s → e` med same berøring.
+Ved kvar mellomstasjon er det ein kort stopp. Hald fingeren nede og dra vidare.
+Bokstavane som er lesne, blir viste samla over sporet: `l`, `le`, `les`, `lese`.
+Her står berre ordet som veks, utan forklaringstekst. Stjerna kjem ved sida av det ferdige ordet.
 
-Opne `index.html` i nettlesaren.
+- Kvar bokstav får sin eigen stopp, også når barnet dreg gjennom heile ordet utan å løfte fingeren.
+- Løftar barnet fingeren undervegs, blir bokstaven ståande der. Ta tak igjen og hald fram.
+- Dra frå venstre mot høgre på både iPad, mobil og datamaskin.
+- Lange ord beheld store bokstavar. Sporet flyttar seg automatisk vidare ved mellomstasjonane. Fingeren kan flyttast tilbake mot venstre, framleis nede, før barnet dreg vidare mot høgre.
+- Ei lita stjerne kjem når siste bokstav er nådd. Heile ordet blir ståande gjennom pausen.
+- Ingen tekstmarkering eller langtrykkmeny i leseområdet. Vaksne kan framleis redigere og lime inn øveord.
+- Tastatur: pil venstre/høgre flyttar bokstaven. Enter, mellomrom eller End går til neste stasjon. Home går tilbake til starten av det pågåande draget.
 
-Om du vil køyre via ein enkel lokal server, kan du til dømes bruke:
+## Øveord
 
-```bash
-python3 -m http.server
-```
+Skriv eitt øveord per linje og vel **Lagre vekas øveord**. Heile ordet blir teke med.
+Ord må ha minst to bokstavar, utan mellomrom, tal eller skiljeteikn.
+Store bokstavar blir gjorde om til små, og duplikat blir fjerna.
+Feil i ei linje blir viste før lagring; ord blir aldri kutta eller sette saman i det stille.
 
-og så opne adressa som blir vist i terminalen.
+Vel **6, 8, 10 eller 15 sekund** mellom orda. Standard er 6 sekund.
+Slå av automatisk overgang for å velje **Neste ord** sjølv etter pausen.
+Tid medan appen er i bakgrunnen, tel ikkje med i lesepausen.
 
-## Kva som er bygd inn no
+Ord og innstillingar blir lagra lokalt på denne eininga, i denne nettlesaren.
+Tidlegare lagra Lyso-ord blir lesne frå den same lagringsnøkkelen.
+Ei førehandsvising på ei anna adresse har si eiga lokale ordliste.
+Standardpakken er framleis `so`, `ma`, `le`, `ni`, `ro`.
 
-- rein elevvising med svært lite tekst
-- tittel `Lyso` og enkel figur i toppen
-- dra-og-slepp av første bokstav mot andre bokstav
-- berre små bokstavar i appen
-- lydlaus utgåve utan lydstøtte
-- stjerner rundt mottakarboksen når stavinga er fullført
-- automatisk overgang til neste oppgåve etter kort pause
-- støtte for touch-skjermar med glattare dragging på iPad og iPhone
-- sperre mot tekstmarkering i draområdet på touch-skjermar
-- vaksenmodus der du kan leggje inn eigne stavingar
+## Køyre appen
 
-## Vaksenmodus
+Opne `index.html`, eller start ein lokal statisk nettserver i denne mappa.
+Prosjektet brukar vanleg HTML, CSS og JavaScript og har ingen avhengigheiter eller byggjesteg.
 
-Opne `Vaksenmodus` i appen og skriv éi stavelse per linje.
+## Kontrollar
 
-- døme: `ma`, `so`, `li`, `no`
-- appen brukar berre dei to første bokstavane i kvar linje
-- bokstavane blir gjorde om til små bokstavar
-- innhaldet blir lagra lokalt i nettlesaren på denne eininga
-- trykk `Tilbakestill standard` for å gå tilbake til startpakka
-
-## Standardstavingar
-
-Standardpakken i appen er:
-
-- `so`
-- `ma`
-- `le`
-- `ni`
-- `ro`
-
-## Teknisk
-
-Prosjektet er ein liten statisk nettapp utan byggjesteg.
-
-- [index.html](/Users/thomaskopperstad/Documents/Stavelser/index.html)
-- [styles.css](/Users/thomaskopperstad/Documents/Stavelser/styles.css)
-- [app.js](/Users/thomaskopperstad/Documents/Stavelser/app.js)
-- [favicon.svg](/Users/thomaskopperstad/Documents/Stavelser/favicon.svg)
+Køyr `node --test tests/reading.test.cjs`.
+Testane køyrer appens hendingar med ein liten simulert DOM og virtuell tid, og dekkjer
+mellomstasjonar, frigjeving før neste biletrute, fleire fingrar, avbrot, lange ord,
+rotasjon, gamle tidsur, lagring, tastatur og tekstmarkering.
+Dei erstattar ikkje ei praktisk utprøving i Safari på ein fysisk iPad.
